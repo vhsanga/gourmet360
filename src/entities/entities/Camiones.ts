@@ -16,7 +16,7 @@ import { Despachos } from "./Despachos";
 @Entity("camiones", { schema: "gourmet360" })
 export class Camiones {
   @PrimaryGeneratedColumn({ type: "bigint", name: "id" })
-  id: string;
+  id: number;
 
   @Column("varchar", { name: "placa", length: 20 })
   placa: string;
@@ -56,7 +56,7 @@ export class Camiones {
   createdBy: number | null;
 
   @Column("bigint", { name: "updated_by", nullable: true })
-  updatedBy: string | null;
+  updatedBy: number | null;
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.camiones, {
     onDelete: "NO ACTION",

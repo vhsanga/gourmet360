@@ -8,6 +8,8 @@ import { CustomUtils } from 'src/utils/custom_utils';
 import { CreateVentaDto } from './dtos/create-venta.dto';
 import { VentasService } from './services/ventas.service';
 import { CreateCamionDto } from './dtos/create-camion.dto';
+import { CambiosService } from './services/cambios.service';
+import { CreateCambioDto } from './dtos/create-cambio.dto';
 
 @Controller('admin')
 @UseGuards(AuthGuard('jwt'))
@@ -16,6 +18,7 @@ export class AdminController {
       private readonly despachosService: DespachoService,
       private readonly camionesService: CamionService,
       private readonly productoService: ProductoServices,
+      private readonly cambiosService: CambiosService,
       private ventasService: VentasService
     ) {}
 
@@ -32,6 +35,16 @@ export class AdminController {
     return CustomUtils.responseApi('Lista de camiones con choferes', data);
   }
 
+
+  @Post('registrar-conductor')
+  async registrarCamion(
+    @Body() dto: CreateCamionDto,
+    @Req() req: any
+  ) {
+    const userId = req.user.id; // viene del token
+    return this.camionesService.registrarCamion(dto, userId);
+  }
+
   @Get('productos')
   async listarProductos() {
     const data = await this.productoService.listarProductos();
@@ -44,12 +57,9 @@ export class AdminController {
     return this.ventasService.registrarVenta(dto, userId);
   }
 
-  @Post('registrar-conductor')
-  async registrarCamion(
-    @Body() dto: CreateCamionDto,
-    @Req() req: any
-  ) {
-    const userId = req.user.id; // viene del token
-    return this.camionesService.registrarCamion(dto, userId);
+  @Post('cambio-producto')
+  registrarCambio(@Body() dto: CreateCambioDto) {
+    return this.cambiosService.registrarCambio(dto);
   }
+
 }

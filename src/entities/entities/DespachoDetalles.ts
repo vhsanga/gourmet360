@@ -17,7 +17,7 @@ import { Productos } from "./Productos";
 @Entity("despacho_detalles", { schema: "gourmet360" })
 export class DespachoDetalles {
   @PrimaryGeneratedColumn({ type: "bigint", name: "id" })
-  id: string;
+  id: number;
 
   @Column("bigint", { name: "despacho_id" })
   despachoId: number;
@@ -27,12 +27,6 @@ export class DespachoDetalles {
 
   @Column("decimal", { name: "cantidad_entregada", precision: 10, scale: 2 })
   cantidadEntregada: number;
-
-  @Column("decimal", { name: "cantidad_restante", precision: 10, scale: 2 })
-  cantidadRestante: number
-
-  @Column("decimal", { name: "cantidad_asignada", precision: 10, scale: 2 })
-  cantidadAsignada: number
 
   @Column("datetime", {
     name: "created_at",
@@ -53,6 +47,22 @@ export class DespachoDetalles {
 
   @Column("bigint", { name: "updated_by", nullable: true })
   updatedBy: number | null;
+
+  @Column("decimal", {
+    name: "cantidad_restante",
+    nullable: true,
+    precision: 10,
+    scale: 2,
+  })
+  cantidadRestante: number;
+
+  @Column("decimal", {
+    name: "cantidad_asignada",
+    nullable: true,
+    precision: 10,
+    scale: 2,
+  })
+  cantidadAsignada: number | null;
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.despachoDetalles, {
     onDelete: "NO ACTION",

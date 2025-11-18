@@ -16,6 +16,10 @@ import { Cobros } from './entities/entities/Cobros';
 import { Rendiciones } from './entities/entities/Rendiciones';
 import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
+import { Devoluciones } from './entities/entities/Devoluciones';
+import { DevolucionDetalles } from './entities/entities/DevolucionDetalles';
+import { Cambios } from './entities/entities/Cambios';
+import { CambioDetalles } from './entities/entities/CambioDetalles';
 
 @Module({
   imports: [
@@ -26,7 +30,7 @@ import { AdminModule } from './admin/admin.module';
       username: 'remoto',
       password: 'P@ss4930',
       database: 'gourmet360',
-      entities: [Usuarios, Clientes, Categorias, Productos, Camiones, Rutas, RutaClientes, Despachos, DespachoDetalles, Ventas, VentaDetalles, Cobros, Rendiciones,   ],
+      entities: [Usuarios, Clientes, Categorias, Productos, Camiones, Rutas, RutaClientes, Despachos, DespachoDetalles, Ventas, VentaDetalles, Cobros, Rendiciones, Devoluciones, DevolucionDetalles, Cambios, CambioDetalles,  ],
       //synchronize: true, // ⚠️ Solo en desarrollo
     }),
     UsuarioModule,

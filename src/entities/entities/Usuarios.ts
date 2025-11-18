@@ -7,11 +7,15 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { CambioDetalles } from "./CambioDetalles";
+import { Cambios } from "./Cambios";
 import { Camiones } from "./Camiones";
 import { Clientes } from "./Clientes";
 import { Cobros } from "./Cobros";
 import { DespachoDetalles } from "./DespachoDetalles";
 import { Despachos } from "./Despachos";
+import { DevolucionDetalles } from "./DevolucionDetalles";
+import { Devoluciones } from "./Devoluciones";
 import { Productos } from "./Productos";
 import { Rendiciones } from "./Rendiciones";
 import { RutaClientes } from "./RutaClientes";
@@ -66,6 +70,27 @@ export class Usuarios {
   @Column("bigint", { name: "updated_by", nullable: true })
   updatedBy: number | null;
 
+  @OneToMany(
+    () => CambioDetalles,
+    (cambioDetalles) => cambioDetalles.createdBy2
+  )
+  cambioDetalles: CambioDetalles[];
+
+  @OneToMany(
+    () => CambioDetalles,
+    (cambioDetalles) => cambioDetalles.updatedBy2
+  )
+  cambioDetalles2: CambioDetalles[];
+
+  @OneToMany(() => Cambios, (cambios) => cambios.chofer)
+  cambios: Cambios[];
+
+  @OneToMany(() => Cambios, (cambios) => cambios.createdBy2)
+  cambios2: Cambios[];
+
+  @OneToMany(() => Cambios, (cambios) => cambios.updatedBy2)
+  cambios3: Cambios[];
+
   @OneToMany(() => Camiones, (camiones) => camiones.chofer)
   camiones: Camiones[];
 
@@ -107,6 +132,27 @@ export class Usuarios {
 
   @OneToMany(() => Despachos, (despachos) => despachos.updatedBy2)
   despachos3: Despachos[];
+
+  @OneToMany(
+    () => DevolucionDetalles,
+    (devolucionDetalles) => devolucionDetalles.createdBy2
+  )
+  devolucionDetalles: DevolucionDetalles[];
+
+  @OneToMany(
+    () => DevolucionDetalles,
+    (devolucionDetalles) => devolucionDetalles.updatedBy2
+  )
+  devolucionDetalles2: DevolucionDetalles[];
+
+  @OneToMany(() => Devoluciones, (devoluciones) => devoluciones.chofer)
+  devoluciones: Devoluciones[];
+
+  @OneToMany(() => Devoluciones, (devoluciones) => devoluciones.createdBy2)
+  devoluciones2: Devoluciones[];
+
+  @OneToMany(() => Devoluciones, (devoluciones) => devoluciones.updatedBy2)
+  devoluciones3: Devoluciones[];
 
   @OneToMany(() => Productos, (productos) => productos.createdBy2)
   productos: Productos[];

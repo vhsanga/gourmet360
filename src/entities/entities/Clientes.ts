@@ -9,6 +9,7 @@ import {
 } from "typeorm";
 import { Usuarios } from "./Usuarios";
 import { Cobros } from "./Cobros";
+import { Devoluciones } from "./Devoluciones";
 import { RutaClientes } from "./RutaClientes";
 import { Ventas } from "./Ventas";
 
@@ -83,6 +84,9 @@ export class Clientes {
 
   @OneToMany(() => Cobros, (cobros) => cobros.cliente)
   cobros: Cobros[];
+
+  @OneToMany(() => Devoluciones, (devoluciones) => devoluciones.cliente)
+  devoluciones: Devoluciones[];
 
   @OneToMany(() => RutaClientes, (rutaClientes) => rutaClientes.cliente)
   rutaClientes: RutaClientes[];

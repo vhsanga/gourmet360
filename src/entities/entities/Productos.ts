@@ -7,7 +7,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { CambioDetalles } from "./CambioDetalles";
 import { DespachoDetalles } from "./DespachoDetalles";
+import { DevolucionDetalles } from "./DevolucionDetalles";
 import { Categorias } from "./Categorias";
 import { Usuarios } from "./Usuarios";
 import { VentaDetalles } from "./VentaDetalles";
@@ -83,11 +85,20 @@ export class Productos {
   @Column("bigint", { name: "updated_by", nullable: true })
   updatedBy: string | null;
 
+  @OneToMany(() => CambioDetalles, (cambioDetalles) => cambioDetalles.producto)
+  cambioDetalles: CambioDetalles[];
+
   @OneToMany(
     () => DespachoDetalles,
     (despachoDetalles) => despachoDetalles.producto
   )
   despachoDetalles: DespachoDetalles[];
+
+  @OneToMany(
+    () => DevolucionDetalles,
+    (devolucionDetalles) => devolucionDetalles.producto
+  )
+  devolucionDetalles: DevolucionDetalles[];
 
   @ManyToOne(() => Categorias, (categorias) => categorias.productos, {
     onDelete: "NO ACTION",
