@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Request, UseGuards } from '@nestjs/common';
 import { DespachoService } from './services/despacho.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateDespachoDto } from './dtos/create-despacho.dto';
@@ -7,6 +7,7 @@ import { ProductoServices } from './services/producto.services';
 import { CustomUtils } from 'src/utils/custom_utils';
 import { CreateVentaDto } from './dtos/create-venta.dto';
 import { VentasService } from './services/ventas.service';
+import { CreateCamionDto } from './dtos/create-camion.dto';
 
 @Controller('admin')
 @UseGuards(AuthGuard('jwt'))
@@ -41,5 +42,14 @@ export class AdminController {
   registrarVenta(@Body() dto: CreateVentaDto, @Request() req) {
     const userId = req.user.userId; 
     return this.ventasService.registrarVenta(dto, userId);
+  }
+
+  @Post('registrar-conductor')
+  async registrarCamion(
+    @Body() dto: CreateCamionDto,
+    @Req() req: any
+  ) {
+    const userId = req.user.id; // viene del token
+    return this.camionesService.registrarCamion(dto, userId);
   }
 }

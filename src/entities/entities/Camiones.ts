@@ -33,10 +33,10 @@ export class Camiones {
     precision: 10,
     scale: 2,
   })
-  capacidad: string | null;
+  capacidad: number | null;
 
   @Column("bigint", { name: "chofer_id", nullable: true })
-  choferId: string | null;
+  choferId: number | null;
 
   @Column("datetime", {
     name: "created_at",
@@ -53,7 +53,7 @@ export class Camiones {
   updatedAt: Date | null;
 
   @Column("bigint", { name: "created_by", nullable: true })
-  createdBy: string | null;
+  createdBy: number | null;
 
   @Column("bigint", { name: "updated_by", nullable: true })
   updatedBy: string | null;

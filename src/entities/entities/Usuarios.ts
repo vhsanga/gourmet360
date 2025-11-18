@@ -61,10 +61,10 @@ export class Usuarios {
   updatedAt: Date | null;
 
   @Column("bigint", { name: "created_by", nullable: true })
-  createdBy: string | null;
+  createdBy: number | null;
 
   @Column("bigint", { name: "updated_by", nullable: true })
-  updatedBy: string | null;
+  updatedBy: number | null;
 
   @OneToMany(() => Camiones, (camiones) => camiones.chofer)
   camiones: Camiones[];
