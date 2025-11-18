@@ -15,6 +15,7 @@ import { VentaDetalles } from './entities/entities/VentaDetalles';
 import { Cobros } from './entities/entities/Cobros';
 import { Rendiciones } from './entities/entities/Rendiciones';
 import { AuthModule } from './auth/auth.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { AuthModule } from './auth/auth.module';
     }),
     UsuarioModule,
     AuthModule,
+    AdminModule,
   ],
 })
 export class AppModule {}

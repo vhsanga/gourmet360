@@ -17,19 +17,19 @@ import { Ventas } from "./Ventas";
 @Entity("venta_detalles", { schema: "gourmet360" })
 export class VentaDetalles {
   @PrimaryGeneratedColumn({ type: "bigint", name: "id" })
-  id: string;
+  id: number;
 
   @Column("bigint", { name: "venta_id" })
-  ventaId: string;
+  ventaId: number;
 
   @Column("bigint", { name: "producto_id" })
-  productoId: string;
+  productoId: number;
 
   @Column("decimal", { name: "cantidad", precision: 10, scale: 2 })
-  cantidad: string;
+  cantidad: number;
 
   @Column("decimal", { name: "precio_unitario", precision: 10, scale: 2 })
-  precioUnitario: string;
+  precioUnitario: number;
 
   @Column("decimal", {
     name: "subtotal",
@@ -37,7 +37,7 @@ export class VentaDetalles {
     precision: 10,
     scale: 2,
   })
-  subtotal: string | null;
+  subtotal: number | null;
 
   @Column("datetime", {
     name: "created_at",
@@ -54,10 +54,10 @@ export class VentaDetalles {
   updatedAt: Date | null;
 
   @Column("bigint", { name: "created_by", nullable: true })
-  createdBy: string | null;
+  createdBy: number | null;
 
   @Column("bigint", { name: "updated_by", nullable: true })
-  updatedBy: string | null;
+  updatedBy: number | null;
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.ventaDetalles, {
     onDelete: "NO ACTION",

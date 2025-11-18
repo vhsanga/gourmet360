@@ -21,13 +21,13 @@ import { Ventas } from "./Ventas";
 @Entity("despachos", { schema: "gourmet360" })
 export class Despachos {
   @PrimaryGeneratedColumn({ type: "bigint", name: "id" })
-  id: string;
+  id: number;
 
   @Column("bigint", { name: "chofer_id" })
-  choferId: string;
+  choferId: number;
 
   @Column("bigint", { name: "camion_id" })
-  camionId: string;
+  camionId: number;
 
   @Column("date", { name: "fecha" })
   fecha: string;
@@ -55,10 +55,10 @@ export class Despachos {
   updatedAt: Date | null;
 
   @Column("bigint", { name: "created_by", nullable: true })
-  createdBy: string | null;
+  createdBy: number | null;
 
   @Column("bigint", { name: "updated_by", nullable: true })
-  updatedBy: string | null;
+  updatedBy: number | null;
 
   @OneToMany(() => Cobros, (cobros) => cobros.despacho)
   cobros: Cobros[];

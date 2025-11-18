@@ -19,13 +19,13 @@ import { Despachos } from "./Despachos";
 @Entity("ventas", { schema: "gourmet360" })
 export class Ventas {
   @PrimaryGeneratedColumn({ type: "bigint", name: "id" })
-  id: string;
+  id: number;
 
   @Column("bigint", { name: "despacho_id" })
-  despachoId: string;
+  despachoId: number;
 
   @Column("bigint", { name: "cliente_id" })
-  clienteId: string;
+  clienteId: number;
 
   @Column("datetime", {
     name: "fecha",
@@ -38,7 +38,7 @@ export class Ventas {
   tipoPago: "contado" | "credito";
 
   @Column("decimal", { name: "total", precision: 10, scale: 2 })
-  total: string;
+  total: number;
 
   @Column("datetime", {
     name: "created_at",
@@ -55,10 +55,10 @@ export class Ventas {
   updatedAt: Date | null;
 
   @Column("bigint", { name: "created_by", nullable: true })
-  createdBy: string | null;
+  createdBy: number | null;
 
   @Column("bigint", { name: "updated_by", nullable: true })
-  updatedBy: string | null;
+  updatedBy: number | null;
 
   @OneToMany(() => VentaDetalles, (ventaDetalles) => ventaDetalles.venta)
   ventaDetalles: VentaDetalles[];

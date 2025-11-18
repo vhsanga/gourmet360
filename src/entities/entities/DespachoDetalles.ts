@@ -20,13 +20,19 @@ export class DespachoDetalles {
   id: string;
 
   @Column("bigint", { name: "despacho_id" })
-  despachoId: string;
+  despachoId: number;
 
   @Column("bigint", { name: "producto_id" })
-  productoId: string;
+  productoId: number;
 
   @Column("decimal", { name: "cantidad_entregada", precision: 10, scale: 2 })
-  cantidadEntregada: string;
+  cantidadEntregada: number;
+
+  @Column("decimal", { name: "cantidad_restante", precision: 10, scale: 2 })
+  cantidadRestante: number
+
+  @Column("decimal", { name: "cantidad_asignada", precision: 10, scale: 2 })
+  cantidadAsignada: number
 
   @Column("datetime", {
     name: "created_at",
@@ -43,10 +49,10 @@ export class DespachoDetalles {
   updatedAt: Date | null;
 
   @Column("bigint", { name: "created_by", nullable: true })
-  createdBy: string | null;
+  createdBy: number | null;
 
   @Column("bigint", { name: "updated_by", nullable: true })
-  updatedBy: string | null;
+  updatedBy: number | null;
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.despachoDetalles, {
     onDelete: "NO ACTION",
