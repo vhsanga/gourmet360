@@ -68,6 +68,12 @@ export class Clientes {
   @Column("bigint", { name: "updated_by", nullable: true })
   updatedBy: string | null;
 
+  @Column("varchar", { name: "lat", nullable: true, length: 64 })
+  lat: string | null;
+
+  @Column("varchar", { name: "lng", nullable: true, length: 64 })
+  lng: string | null;
+
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.clientes, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",

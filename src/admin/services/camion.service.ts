@@ -6,7 +6,7 @@ import { CreateCamionDto } from "../dtos/create-camion.dto";
 import { Usuarios } from "src/entities/entities/Usuarios";
 import { CustomUtils } from "src/utils/custom_utils";
 import * as bcrypt from 'bcrypt';
-import { UsuarioService } from "src/usuario/usuario.service";
+import { UsuarioService } from "src/usuario/services/usuario.service";
 
 @Injectable()
 export class CamionService {
