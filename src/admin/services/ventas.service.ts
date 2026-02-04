@@ -93,8 +93,8 @@ export class VentasService {
       SELECT
           SUM(CASE WHEN v.tipo_pago = 'contado' THEN v.total ELSE 0 END) AS total_ventas_contado,
           SUM(CASE WHEN v.tipo_pago = 'credito' THEN v.total ELSE 0 END) AS total_ventas_credito,
-          vd.cantidad_vendida,
-          dd.cantidad_devuelta
+          MAX(vd.cantidad_vendida) AS cantidad_vendida,
+          MAX(dd.cantidad_devuelta) AS cantidad_devuelta
       FROM ventas v
       LEFT JOIN (
           SELECT SUM(cantidad) AS cantidad_vendida
@@ -109,7 +109,7 @@ export class VentasService {
             AND created_at < DATE_ADD(?, INTERVAL 1 DAY)
       ) dd ON 1=1
       WHERE v.fecha >= ?
-        AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
+        AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY);
     `;
 
     const result = await this.dataSource.query(sql, [
