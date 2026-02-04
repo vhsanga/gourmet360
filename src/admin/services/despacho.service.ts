@@ -14,7 +14,7 @@ export class DespachoService {
     private dataSource: DataSource,
   ) {}
 
-  async crearDespacho(dto: CreateDespachoDto, userId: number) {
+  async crearDespacho(dto: CreateDespachoDto) {
     
     return await this.dataSource.transaction(async (manager) => {
       // Crear encabezado del despacho
@@ -22,7 +22,6 @@ export class DespachoService {
         camionId: dto.camion_id,
         choferId: dto.chofer_id,
         fecha: new Date().toISOString().split('T')[0], // Fecha actual en formato YYYY-MM-DD
-        createdBy: userId,
       });
 
       const despachoGuardado = await manager.save(Despachos, despacho);
@@ -35,7 +34,6 @@ export class DespachoService {
           cantidadAsignada: det.cantidad,
           cantidadRestante: det.cantidad, 
           cantidadEntregada: 0,   
-          createdBy: userId,      
         });
       });
       await manager.save(DespachoDetalles, detalles);

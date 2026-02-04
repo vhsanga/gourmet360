@@ -24,8 +24,7 @@ export class AdminController {
   
   @Post('create-despacho')
   crear(@Body() dto: CreateDespachoDto, @Request() req) {
-    const userId = req.user.userId; // viene del token JWT
-    return this.despachosService.crearDespacho(dto, userId);
+    return this.despachosService.crearDespacho(dto);
   }
 
   @Get('camiones')
