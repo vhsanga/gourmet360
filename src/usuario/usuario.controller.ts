@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, Request } from '@nestjs/common';
 import { UsuarioService } from './services/usuario.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { CustomUtils } from 'src/utils/custom_utils';
 import { ClientesChoferService } from './services/cliente-chofer.service';
+import { CreateClienteDto } from './dto/create-cliente.dto';
 
 @Controller('usuario')
 export class UsuarioController {
@@ -24,14 +25,15 @@ export class UsuarioController {
 
   @Get('data-home')
   async dataHome(@Query('idChofer') idChofer: number) {
-    let clientes= await this.clientesChoferService.listarClientesPorChofer(idChofer);
+    let despachoPendiente= await this.clientesChoferService.consultarDespachoPendientes(idChofer);
+    let clientes= await this.clientesChoferService.listarClientesPorChofer(idChofer, despachoPendiente.id);
     let productos= await this.clientesChoferService.consultarProductosAsignadosByChoferId(idChofer);
-    return CustomUtils.responseApi('Lista de clientes', {clientes, productos});
+    return CustomUtils.responseApi('Lista de clientes', {clientes, productos, despacho: despachoPendiente});
   }
 
   @Get('listar-clientes')
   async listarClientes(@Query('idChofer') idChofer: number) {
-    let data= await this.clientesChoferService.listarClientesPorChofer(idChofer);
+    let data= await this.clientesChoferService.listarAllClientesPorChofer(idChofer);
     return CustomUtils.responseApi('Lista de clientes', data);
   }
 
@@ -40,6 +42,12 @@ export class UsuarioController {
     let data= await this.clientesChoferService.consultarProductosAsignadosByChoferId(idChofer);
     return CustomUtils.responseApi('Lista de productos asiganados', data);
   }
+
+  @Post('create-cliente')
+  createCliente(@Body() createClienteDto: CreateClienteDto, @Request() req: any) {
+    return this.clientesChoferService.createClienteChofer(createClienteDto);
+  }
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {

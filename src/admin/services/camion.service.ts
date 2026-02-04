@@ -22,7 +22,9 @@ export class CamionService {
             .innerJoinAndSelect('usuarios', 'u', 'u.id = camion.chofer_id', { rol: 'chofer' })
             .select([
             'camion.id',
+            'camion.chofer_id',
             'camion.placa',
+            'camion.marca',
             'camion.modelo',
             'camion.capacidad',
             'u.id',
@@ -63,4 +65,66 @@ export class CamionService {
             });
         });
     }
+
+    async setDepachoEntregadoPorChofer(choferId: number) {
+        const sql = `
+        update despachos set estado = 'finalizado' where chofer_id = ? and estado = 'pendiente'
+        `;
+        await this.dataSource.query(sql, [choferId]);
+    }
+
+    async obtenerResumenDespachosPorChofer(choferId: number) {
+        const sql = `
+        select sum(dd.cantidad_asignada) cantidad_asignada, sum(dd.cantidad_entregada) cantidad_entregada, sum(dd.cantidad_restante)cantidad_restante from despacho_detalles dd 
+        inner join despachos d on d.id = dd.despacho_id 
+        where d.estado ='pendiente' and d.chofer_id  = ?
+        `;
+        const result = await this.dataSource.query(sql, [
+        choferId
+        ]);
+        return result[0];
+    }
+
+    async obtenerResumenDevolucionesPorChofer(choferId: number) {
+        const sql = `
+        select coalesce ( sum(dd.cantidad_devuelta), 0) cantidad_devuelta from devolucion_detalles dd
+            inner join  devoluciones d on d.id = dd.devolucion_id 
+            where  d.chofer_id = ? 
+            AND d.created_at >= CURDATE()
+            AND d.created_at < CURDATE() + INTERVAL 1 DAY;
+        `;
+        const result = await this.dataSource.query(sql, [
+        choferId
+        ]);
+        return result[0];
+    }
+
+    async obtenerResumenVentasPorChoferHoy(choferId: number) {
+        const sql = `
+         SELECT
+            COALESCE(SUM(CASE WHEN v.tipo_pago = 'credito' THEN v.total END), 0) AS ventas_credito,
+            COALESCE(SUM(CASE WHEN v.tipo_pago = 'contado' THEN v.total END), 0) AS ventas_contado
+            FROM ventas v
+            JOIN despachos d ON v.despacho_id = d.id
+            WHERE d.chofer_id = ?
+            AND d.created_at >= CURDATE()
+            AND d.created_at < CURDATE() + INTERVAL 1 DAY;
+        `;
+        const result = await this.dataSource.query(sql, [
+        choferId
+        ]);
+        return result[0];
+    } 
+
+    async obtenerCuentasPorCobrarChofer(choferId: number) {
+        const sql = `
+         select sum(total) cuentas_por_cobrar from  ventas v
+            JOIN despachos d ON v.despacho_id = d.id
+            WHERE d.chofer_id = ? and v.tipo_pago ='credito' 
+        `;
+        const result = await this.dataSource.query(sql, [
+        choferId
+        ]);
+        return result[0];
+    } 
 }

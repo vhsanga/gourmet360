@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, Request, UseGuards } from '@nestjs/common';
 import { DespachoService } from './services/despacho.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateDespachoDto } from './dtos/create-despacho.dto';
@@ -12,7 +12,6 @@ import { CambiosService } from './services/cambios.service';
 import { CreateCambioDto } from './dtos/create-cambio.dto';
 
 @Controller('admin')
-@UseGuards(AuthGuard('jwt'))
 export class AdminController {
     constructor(
       private readonly despachosService: DespachoService,
@@ -53,13 +52,49 @@ export class AdminController {
 
   @Post('save-venta')
   registrarVenta(@Body() dto: CreateVentaDto, @Request() req) {
-    const userId = req.user.userId; 
-    return this.ventasService.registrarVenta(dto, userId);
+    return this.ventasService.registrarVenta(dto);
   }
 
   @Post('cambio-producto')
   registrarCambio(@Body() dto: CreateCambioDto) {
     return this.cambiosService.registrarCambio(dto);
+  }
+
+  @Get('dashboard-data-admin/:fecha')
+  async getDashboardDataAdmin(@Param('fecha') fecha: string) {
+    let resumenventas = await this.ventasService.obtenerResumenVentasPorFecha(fecha);
+    let resumenDespachos = await this.ventasService.obtenerResumenDespachosPorFecha(fecha);
+    return CustomUtils.responseApi('Dashboard data', {
+      ventas: resumenventas,
+      despachos: resumenDespachos
+    });
+  }
+
+  @Get('resumen-despachos-chofer/:choferId')
+  async getResumenDespachosPorChofer(@Param('choferId') choferId: number) {
+    const despachos = await this.camionesService.obtenerResumenDespachosPorChofer(choferId);
+    const cuentasPorCobrar = await this.camionesService.obtenerCuentasPorCobrarChofer(choferId);
+    const devoluciones = await this.camionesService.obtenerResumenDevolucionesPorChofer(choferId);
+    const ventasHoy = await this.camionesService.obtenerResumenVentasPorChoferHoy(choferId);
+    
+    return CustomUtils.responseApi('Resumen de despachos por chofer', {
+      despachos,
+      devoluciones,
+      ventasHoy,
+      cuentasPorCobrar
+    });
+  }
+
+  @Post('set-despacho-entregado/:choferId')
+  async setDespachoEntregado(@Param('choferId') choferId: number) {
+    await this.camionesService.setDepachoEntregadoPorChofer(choferId);
+    return CustomUtils.responseApi('Despachos actualizados a entregados para el chofer', {});
+  }
+
+  @Get('resumen-ventas-clientes')
+  async getResumenVentasPorClientes() {
+    const data = await this.ventasService.resumenVentasClintes();
+    return CustomUtils.responseApi('Resumen de ventas por clientes', data);
   }
 
 }

@@ -3,6 +3,11 @@ import { Type } from 'class-transformer';
 import { CreateVentaDetalleDto } from './create-venta-detalle.dto';
 
 export class CreateVentaDto {
+
+  @IsNumber()
+  @IsNotEmpty()
+  idChofer: number;
+
   @IsNumber()
   @IsNotEmpty()
   idCliente: number;

@@ -15,14 +15,14 @@ export class ProductoServices{
             .createQueryBuilder('productos')
             .innerJoinAndSelect('categorias', 'c', 'c.id = productos.id_categoria', { activo: 1 })
             .select([
-            'productos.id',
-            'productos.nombre',
-            'productos.unidad',
-            'productos.precio_unitario',
-            'productos.precio_unitario_min',
-            'productos.costo_unitario',
-            'c.id',
-            'c.nombre',
+            'productos.id  as id',
+            'productos.nombre as nombre',
+            'productos.unidad as unidad ',
+            'productos.precio_unitario as precio_unitario',
+            'productos.precio_unitario_min as precio_unitario_min',
+            'productos.costo_unitario as costo_unitario',
+            'c.id as categoria_id',
+            'c.nombre as categoria_nombre',
             ])
             .orderBy('productos.id', 'ASC')
             .getRawMany();

@@ -18,7 +18,7 @@ import { Ventas } from "./Ventas";
 @Entity("clientes", { schema: "gourmet360" })
 export class Clientes {
   @PrimaryGeneratedColumn({ type: "bigint", name: "id" })
-  id: string;
+  id: number;
 
   @Column("varchar", { name: "nombre", length: 150 })
   nombre: string;
