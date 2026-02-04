@@ -40,8 +40,7 @@ export class AdminController {
     @Body() dto: CreateCamionDto,
     @Req() req: any
   ) {
-    const userId = req.user.id; // viene del token
-    return this.camionesService.registrarCamion(dto, userId);
+    return this.camionesService.registrarCamion(dto);
   }
 
   @Get('productos')

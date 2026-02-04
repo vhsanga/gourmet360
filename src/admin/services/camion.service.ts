@@ -35,7 +35,7 @@ export class CamionService {
             .getRawMany();
     }
 
-    async registrarCamion(dto: CreateCamionDto, userId: number) {
+    async registrarCamion(dto: CreateCamionDto) {
         const existing = await this.usuariosService.findOneByCelular( dto.chofer.celular!);
         if (existing) {
             throw new ConflictException('El celular ya está registrado');
@@ -47,7 +47,6 @@ export class CamionService {
                 pin: hashedPassword,
                 rol: dto.chofer.rol,
                 celular: dto.chofer.celular,
-                createdBy: userId,
             });
             const choferGuardado = await manager.save(Usuarios, nuevoChofer);
             const camion = manager.create(Camiones, {
@@ -56,7 +55,6 @@ export class CamionService {
                 modelo: dto.modelo,
                 capacidad: dto.capacidad,
                 choferId: choferGuardado.id,
-                createdBy: userId,
             });
             const camionGuardado = await manager.save(Camiones, camion);
             return CustomUtils.responseApi('Chofer registrados correctamente', {
