@@ -95,4 +95,9 @@ export class AdminController {
     return CustomUtils.responseApi('Resumen de ventas por clientes', data);
   }
 
+  @Post('update-gasto-despacho/:despachoId')
+  async updateGastoDespacho(@Param('despachoId') despachoId: number, @Body('gastos') gastos: number) {
+    return this.despachosService.actualizarGastoDespacho(despachoId, gastos);
+  }
+
 }

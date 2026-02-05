@@ -146,7 +146,7 @@ export class VentasService {
 
   async resumenVentasClintes() {
       const sql = `
-        select c.id, c.nombre, c.contacto, c.direccion, c.telefono,
+        select c.id, c.nombre, c.contacto, c.direccion, c.telefono, c.especial,
           (select coalesce(sum(total), 0) from ventas v where v.cliente_id = c.id and tipo_pago ='contado' AND v.created_at >= CURDATE()
                       AND v.created_at < CURDATE() + INTERVAL 1 DAY) venta_contado_hoy,
           (select coalesce(sum(total), 0) from ventas v where v.cliente_id = c.id and tipo_pago ='contado') deduda_acumulada

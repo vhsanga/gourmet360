@@ -40,6 +40,14 @@ export class Despachos {
   })
   estado: "pendiente" | "en_ruta" | "finalizado" | null;
 
+  @Column("decimal", {
+    name: "gastos",
+    nullable: true,
+    precision: 10,
+    scale: 2,
+  })
+  gastos: number | null;
+
   @Column("datetime", {
     name: "created_at",
     nullable: true,

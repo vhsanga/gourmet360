@@ -41,5 +41,13 @@ export class DespachoService {
     });
   }
 
-  
+  async actualizarGastoDespacho(despachoId: number, gastos: number) {
+    const despacho = await this.despachoRepo.findOne({where: {id: despachoId}});
+    if (!despacho) {
+      throw new Error('Despacho no encontrado');
+    } 
+    despacho.gastos = gastos;
+    await this.despachoRepo.save(despacho);
+    return CustomUtils.responseApi('Gastos guardado correctamente');
+  }
 }

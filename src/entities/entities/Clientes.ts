@@ -32,6 +32,9 @@ export class Clientes {
   @Column("varchar", { name: "telefono", nullable: true, length: 10 })
   telefono: string | null;
 
+  @Column("boolean", { name: "especial", nullable: true })
+  especial: boolean | null;
+
   @Column("decimal", {
     name: "saldo_actual",
     nullable: true,

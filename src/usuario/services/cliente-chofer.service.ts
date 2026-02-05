@@ -82,7 +82,9 @@ export class ClientesChoferService {
   }
 
   async createClienteChofer(createClienteDto: CreateClienteDto) {
-    const { id_chofer, observacion, ...clienteData } = createClienteDto;
+    console.log('DTO recibido en el servicio:', createClienteDto);
+    const { id_chofer,  ...clienteData } = createClienteDto;
+    console.log('Datos del cliente extraídos:', clienteData);
     // Creamos el queryRunner para manejar la transacción manualmente
     const queryRunner = this.dataSource.createQueryRunner();
 
@@ -101,7 +103,7 @@ export class ClientesChoferService {
         const relacionChofer = queryRunner.manager.create(ClientesChofer, {
           idCliente: clienteGuardado.id,
           idChofer: id_chofer,
-          observacion: observacion || 'Asignación inicial',
+          observacion: clienteData.especial ? 'Cliente especial' : '',
           createdBy: id_chofer,
           updatedBy: id_chofer,
         });
@@ -120,4 +122,6 @@ export class ClientesChoferService {
       await queryRunner.release();
     }
   }
+
+  
 }

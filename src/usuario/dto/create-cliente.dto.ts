@@ -4,7 +4,8 @@ import {
   IsOptional, 
   IsNumber, 
   Length, 
-  IsDecimal 
+  IsDecimal, 
+  IsBoolean
 } from 'class-validator';
 
 export class CreateClienteDto {
@@ -43,8 +44,6 @@ export class CreateClienteDto {
   @IsNotEmpty({ message: 'Debe asignar un chofer inicial' })
   id_chofer: number;
 
-  @IsString()
-  @IsOptional()
-  @Length(1, 150)
-  observacion: string;
+  @IsBoolean()
+  especial: boolean;
 }

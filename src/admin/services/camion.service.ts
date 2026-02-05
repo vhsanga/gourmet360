@@ -73,9 +73,10 @@ export class CamionService {
 
     async obtenerResumenDespachosPorChofer(choferId: number) {
         const sql = `
-        select sum(dd.cantidad_asignada) cantidad_asignada, sum(dd.cantidad_entregada) cantidad_entregada, sum(dd.cantidad_restante)cantidad_restante from despacho_detalles dd 
+        select sum(dd.cantidad_asignada) cantidad_asignada, sum(dd.cantidad_entregada) cantidad_entregada, sum(dd.cantidad_restante)cantidad_restante, max(d.gastos) gastos from despacho_detalles dd 
         inner join despachos d on d.id = dd.despacho_id 
         where d.estado ='pendiente' and d.chofer_id  = ?
+        limit 1
         `;
         const result = await this.dataSource.query(sql, [
         choferId
@@ -105,8 +106,8 @@ export class CamionService {
             FROM ventas v
             JOIN despachos d ON v.despacho_id = d.id
             WHERE d.chofer_id = ?
-            AND d.created_at >= CURDATE()
-            AND d.created_at < CURDATE() + INTERVAL 1 DAY;
+            AND v.fecha >= CURDATE()
+            AND v.fecha < CURDATE() + INTERVAL 1 DAY;
         `;
         const result = await this.dataSource.query(sql, [
         choferId
