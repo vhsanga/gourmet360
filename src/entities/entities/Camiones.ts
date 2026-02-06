@@ -35,6 +35,12 @@ export class Camiones {
   })
   capacidad: number | null;
 
+  @Column("varchar", { name: "lat", nullable: true, length: 60 })
+  lat: string | null;
+
+  @Column("varchar", { name: "lng", nullable: true, length: 60 })
+  lng: string | null;
+
   @Column("bigint", { name: "chofer_id", nullable: true })
   choferId: number | null;
 

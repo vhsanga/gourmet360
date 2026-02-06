@@ -63,4 +63,11 @@ export class UsuarioController {
   remove(@Param('id') id: string) {
     return this.usuarioService.remove(+id);
   }
+
+  @Post('ubicacion')
+  async setUbicacionChofer(@Body('idChofer') idChofer: number, @Body('lat') lat: string, @Body('lng') lng: string) {
+    console.log('idChofer', idChofer, lat, lng);
+    await this.clientesChoferService.setUbicacionChofer(idChofer, lat, lng);
+    return CustomUtils.responseApi('Ubicación actualizada correctamente', null);
+  }
 }

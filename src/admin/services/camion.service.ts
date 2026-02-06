@@ -27,6 +27,8 @@ export class CamionService {
             'camion.marca',
             'camion.modelo',
             'camion.capacidad',
+            'camion.lat',
+            'camion.lng',
             'u.id',
             'u.nombre',
             'u.celular',
@@ -113,7 +115,7 @@ export class CamionService {
         choferId
         ]);
         return result[0];
-    } 
+    }   
 
     async obtenerCuentasPorCobrarChofer(choferId: number) {
         const sql = `

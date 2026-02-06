@@ -123,5 +123,14 @@ export class ClientesChoferService {
     }
   }
 
+  async setUbicacionChofer(idChofer: number, lat: string, lng: string) {
+    const sql = `
+      update camiones 
+      set lat = ?, lng = ? 
+      where chofer_id = ?
+    `;
+    await this.clientesChoferRepo.query(sql, [lat, lng, idChofer]);
+  }
+
   
 }
