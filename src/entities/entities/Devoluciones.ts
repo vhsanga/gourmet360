@@ -21,6 +21,9 @@ export class Devoluciones {
   @PrimaryGeneratedColumn({ type: "bigint", name: "id" })
   id: number;
 
+  @Column("int", { name: "cantidad" })
+  cantidad: number;
+
   @Column("bigint", { name: "cliente_id" })
   clienteId: number;
 

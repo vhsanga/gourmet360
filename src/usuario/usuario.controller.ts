@@ -6,10 +6,14 @@ import { AuthGuard } from '@nestjs/passport';
 import { CustomUtils } from 'src/utils/custom_utils';
 import { ClientesChoferService } from './services/cliente-chofer.service';
 import { CreateClienteDto } from './dto/create-cliente.dto';
+import { DevolucionesService } from './services/devoluciones.services';
 
 @Controller('usuario')
 export class UsuarioController {
-  constructor(private readonly usuarioService: UsuarioService, private readonly clientesChoferService: ClientesChoferService,) {}
+  constructor(private readonly usuarioService: UsuarioService, 
+    private readonly clientesChoferService: ClientesChoferService,
+    private readonly devolucionesService: DevolucionesService
+  ) {}
 
   @Post()
   create(@Body() createUsuarioDto: CreateUsuarioDto) {
@@ -69,5 +73,17 @@ export class UsuarioController {
     console.log('idChofer', idChofer, lat, lng);
     await this.clientesChoferService.setUbicacionChofer(idChofer, lat, lng);
     return CustomUtils.responseApi('Ubicación actualizada correctamente', null);
+  }
+
+  @Post('devolucion')
+  async registrarDevolucion(@Body('cantidad') cantidad: number, @Body('clienteId') clienteId: number, @Body('choferId') choferId: number) {
+    const devolucion = await this.devolucionesService.guardarDevolucion(cantidad, clienteId, choferId);
+    return CustomUtils.responseApi('Devolución registrada con éxito', devolucion);
+  }
+
+  @Get('devoluciones-cliente')
+  async getDevolucionesClienteHoy(@Query('clienteId') clienteId: number) {
+    const totalDevoluciones = await this.devolucionesService.getTotalDevolucionesPorClienteHoy(clienteId);
+    return CustomUtils.responseApi('Total de devoluciones del cliente en las últimas 24 horas', { totalDevoluciones });
   }
 }
