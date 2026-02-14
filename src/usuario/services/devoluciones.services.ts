@@ -10,6 +10,9 @@ export class DevolucionesService {
     ) {}
     
     async guardarDevolucion(cantidad: number, clienteId: number, ChofetId:number) {
+        console.log('cantidad:'+cantidad);
+        console.log('clienteId:'+clienteId);
+        console.log('ChofetId:'+ChofetId);
         const devolucion = new Devoluciones();
         devolucion.cantidad = cantidad;
         devolucion.clienteId = clienteId;

@@ -149,7 +149,10 @@ export class VentasService {
         select c.id, c.nombre, c.contacto, c.direccion, c.telefono, c.especial,
           (select coalesce(sum(total), 0) from ventas v where v.cliente_id = c.id and tipo_pago ='contado' AND v.created_at >= CURDATE()
                       AND v.created_at < CURDATE() + INTERVAL 1 DAY) venta_contado_hoy,
-          (select coalesce(sum(total), 0) from ventas v where v.cliente_id = c.id and tipo_pago ='contado') deduda_acumulada
+          (select coalesce(sum(total), 0) from ventas v where v.cliente_id = c.id and tipo_pago ='contado') deduda_acumulada,
+          (select coalesce ( sum(d.cantidad), 0) cantidad_devuelta from devoluciones d  where  d.cliente_id = c.id 
+            AND d.created_at >= CURDATE()
+            AND d.created_at < CURDATE() + INTERVAL 1 DAY) devolucion_hoy
           from clientes c 
       `;
       const result = await this.dataSource.query(sql);

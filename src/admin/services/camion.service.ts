@@ -88,8 +88,7 @@ export class CamionService {
 
     async obtenerResumenDevolucionesPorChofer(choferId: number) {
         const sql = `
-        select coalesce ( sum(dd.cantidad_devuelta), 0) cantidad_devuelta from devolucion_detalles dd
-            inner join  devoluciones d on d.id = dd.devolucion_id 
+        select coalesce ( sum(d.cantidad), 0) cantidad_devuelta from devoluciones d 
             where  d.chofer_id = ? 
             AND d.created_at >= CURDATE()
             AND d.created_at < CURDATE() + INTERVAL 1 DAY;
