@@ -103,8 +103,8 @@ export class VentasService {
             AND created_at < DATE_ADD(?, INTERVAL 1 DAY)
       ) vd ON 1=1
       LEFT JOIN (
-          SELECT COALESCE(SUM(cantidad_devuelta),0) AS cantidad_devuelta
-          FROM devolucion_detalles
+          SELECT COALESCE(SUM(cantidad),0) AS cantidad_devuelta
+          FROM devoluciones
           WHERE created_at >= ?
             AND created_at < DATE_ADD(?, INTERVAL 1 DAY)
       ) dd ON 1=1
@@ -144,19 +144,41 @@ export class VentasService {
     return result[0];
   }
 
-  async resumenVentasClintes() {
+  async resumenVentasClintes(fecha?: string) {
+      const fechaParam = fecha || new Date().toISOString().split('T')[0];
       const sql = `
         select c.id, c.nombre, c.contacto, c.direccion, c.telefono, c.especial,
-          (select coalesce(sum(total), 0) from ventas v where v.cliente_id = c.id and tipo_pago ='contado' AND v.created_at >= CURDATE()
-                      AND v.created_at < CURDATE() + INTERVAL 1 DAY) venta_contado_hoy,
-          (select coalesce(sum(total), 0) from ventas v where v.cliente_id = c.id and tipo_pago ='contado') deduda_acumulada,
+          (select coalesce(sum(total), 0) from ventas v where v.cliente_id = c.id and tipo_pago ='contado' AND DATE(v.created_at) = ?) venta_contado_hoy,
+          (select coalesce(sum(total), 0) from ventas v where v.cliente_id = c.id and tipo_pago ='credito' AND DATE(v.created_at) = ?) deduda_acumulada,
           (select coalesce ( sum(d.cantidad), 0) cantidad_devuelta from devoluciones d  where  d.cliente_id = c.id 
-            AND d.created_at >= CURDATE()
-            AND d.created_at < CURDATE() + INTERVAL 1 DAY) devolucion_hoy
+            AND DATE(d.created_at) = ?) devolucion_hoy
           from clientes c 
       `;
-      const result = await this.dataSource.query(sql);
+      const result = await this.dataSource.query(sql, [
+        fechaParam,
+        fechaParam,
+        fechaParam,
+      ]);
       return result;
   } 
 
+  async ventasClienteRangoFecha(clienteId: number, fechaInicio: string, fechaFin: string) {
+      const sql = `
+        SELECT 
+          DATE(fecha) AS dia,
+          SUM(CASE WHEN tipo_pago = 'contado' THEN total ELSE 0 END) AS total_contado,
+          SUM(CASE WHEN tipo_pago = 'credito' THEN total ELSE 0 END) AS total_credito
+        FROM ventas
+        WHERE cliente_id = ?
+          AND fecha BETWEEN ? AND ?
+        GROUP BY DATE(fecha)
+        ORDER BY dia ASC
+      `;
+      const result = await this.dataSource.query(sql, [
+        clienteId,
+        `${fechaInicio} 00:00:00`,
+        `${fechaFin} 23:59:59`,
+      ]);
+      return result;
+  } 
 }

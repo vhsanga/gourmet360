@@ -89,15 +89,21 @@ export class AdminController {
     return CustomUtils.responseApi('Despachos actualizados a entregados para el chofer', {});
   }
 
-  @Get('resumen-ventas-clientes')
-  async getResumenVentasPorClientes() {
-    const data = await this.ventasService.resumenVentasClintes();
+  @Get('resumen-ventas-clientes/:fecha')
+  async getResumenVentasPorClientes(@Param('fecha') fecha: string) {
+    const data = await this.ventasService.resumenVentasClintes(fecha);
     return CustomUtils.responseApi('Resumen de ventas por clientes', data);
   }
 
   @Post('update-gasto-despacho/:despachoId')
   async updateGastoDespacho(@Param('despachoId') despachoId: number, @Body('gastos') gastos: number) {
     return this.despachosService.actualizarGastoDespacho(despachoId, gastos);
+  }
+
+  @Post('ventas-cliente-rango')
+  async ventasClienteRangoFecha( @Body('idcliente') clienteId: number, @Body('finicio') fechaInicio: string, @Body('ffin') fechaFin: string) {
+    const data = await this.ventasService.ventasClienteRangoFecha(clienteId, fechaInicio, fechaFin);
+    return CustomUtils.responseApi('Ventas a un cliente en un rango de fechas', data);
   }
 
 }

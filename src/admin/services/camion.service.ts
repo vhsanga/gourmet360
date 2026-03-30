@@ -75,7 +75,7 @@ export class CamionService {
 
     async obtenerResumenDespachosPorChofer(choferId: number) {
         const sql = `
-        select sum(dd.cantidad_asignada) cantidad_asignada, sum(dd.cantidad_entregada) cantidad_entregada, sum(dd.cantidad_restante)cantidad_restante, max(d.gastos) gastos from despacho_detalles dd 
+        select coalesce(sum(dd.cantidad_asignada),0) cantidad_asignada, coalesce(sum(dd.cantidad_entregada),0) cantidad_entregada, coalesce(sum(dd.cantidad_restante), 0)cantidad_restante, coalesce(max(d.gastos), 0) gastos from despacho_detalles dd 
         inner join despachos d on d.id = dd.despacho_id 
         where d.estado ='pendiente' and d.chofer_id  = ?
         limit 1
@@ -118,7 +118,7 @@ export class CamionService {
 
     async obtenerCuentasPorCobrarChofer(choferId: number) {
         const sql = `
-         select sum(total) cuentas_por_cobrar from  ventas v
+         select coalesce(sum(total), 0) cuentas_por_cobrar from  ventas v
             JOIN despachos d ON v.despacho_id = d.id
             WHERE d.chofer_id = ? and v.tipo_pago ='credito' 
         `;
