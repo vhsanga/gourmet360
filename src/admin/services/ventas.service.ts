@@ -148,8 +148,8 @@ export class VentasService {
       const fechaParam = fecha || new Date().toISOString().split('T')[0];
       const sql = `
         select c.id, c.nombre, c.contacto, c.direccion, c.telefono, c.especial,
-          (select coalesce(sum(total), 0) from ventas v where v.cliente_id = c.id and tipo_pago ='contado' AND DATE(v.created_at) = ?) venta_contado_hoy,
-          (select coalesce(sum(total), 0) from ventas v where v.cliente_id = c.id and tipo_pago ='credito' AND DATE(v.created_at) = ?) deduda_acumulada,
+          (select coalesce(sum(total), 0) from ventas v where v.cliente_id = c.id and tipo_pago ='contado' AND DATE(v.fecha) = ?) venta_contado_hoy,
+          (select coalesce(sum(total), 0) from ventas v where v.cliente_id = c.id and tipo_pago ='credito' AND DATE(v.fecha) = ?) deduda_acumulada,
           (select coalesce ( sum(d.cantidad), 0) cantidad_devuelta from devoluciones d  where  d.cliente_id = c.id 
             AND DATE(d.created_at) = ?) devolucion_hoy
           from clientes c 
