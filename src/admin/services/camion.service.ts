@@ -107,8 +107,7 @@ export class CamionService {
             FROM ventas v
             JOIN despachos d ON v.despacho_id = d.id
             WHERE d.chofer_id = ?
-            AND v.fecha >= CURDATE()
-            AND v.fecha < CURDATE() + INTERVAL 1 DAY;
+            and d.estado ='pendiente';
         `;
         const result = await this.dataSource.query(sql, [
         choferId

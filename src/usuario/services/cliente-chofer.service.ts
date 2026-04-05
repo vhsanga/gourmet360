@@ -73,11 +73,25 @@ export class ClientesChoferService {
     return await this.clientesChoferRepo.query(sql, [choferId]);
   }
 
+  /**
+   * Obtener los despachos pendientes, la fecha es el ultimo despacho pendiente, el campo asignado es acumulado
+   * @param choferId Id del chofer
+   * @returns 
+   */
   async consultarDespachoPendientes(choferId: number) {
     const sql = `
-        select id, fecha, estado, (select sum(dd.cantidad_restante) from despacho_detalles dd where dd.despacho_id =d.id) restante from despachos d  where chofer_id  = ? and estado ='pendiente' limit 1
+        SELECT 
+          (select d.id from despachos d where d.estado ='pendiente' and d.chofer_id  = ? order by d.id desc limit 1 ) id,
+          (select d.fecha from despachos d where d.estado ='pendiente' and d.chofer_id  = ? order by d.id desc limit 1 ) fecha,
+          (
+          select sum(dd.cantidad_asignada) from despachos d
+          inner join despacho_detalles dd on dd.despacho_id  = d.id
+          where d.estado ='pendiente' and chofer_id  = ?
+          ) asignado,
+          'pendiente' as estado,
+          (select sum(v.total) from ventas v inner join despachos d on v.despacho_id = d.id where  d.estado ='pendiente' and v.tipo_pago ='contado' and d.chofer_id  = ?) total_ventas
       `;
-    const result =  await this.clientesChoferRepo.query(sql, [choferId]);
+    const result =  await this.clientesChoferRepo.query(sql, [choferId, choferId, choferId, choferId]);
     return result.length ? result[0] : {};
   }
 
@@ -116,7 +130,7 @@ export class ClientesChoferService {
     } catch (err) {
       // Si hay cualquier error, deshacemos todo lo hecho en la transacción
       await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException('No se pudo crear el cliente: ' + err.message);
+      throw new InternalServerErrorException('No se pudo crear el cliente: ' + err);
     } finally {
       // Es vital liberar el queryRunner para no dejar conexiones abiertas
       await queryRunner.release();
