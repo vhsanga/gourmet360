@@ -102,10 +102,11 @@ export class CamionService {
 
     async obtenerResumenDevolucionesPorChofer(choferId: number) {
         const sql = `
-        select coalesce ( sum(d.cantidad), 0) cantidad_devuelta from devoluciones d 
-            where  d.chofer_id = ? 
-            AND d.created_at >= CURDATE()
-            AND d.created_at < CURDATE() + INTERVAL 1 DAY;
+        SELECT COALESCE(SUM(d.cantidad), 0) AS cantidad_devuelta
+            FROM devoluciones d
+            WHERE d.chofer_id = ?
+            AND d.created_at >= CONVERT_TZ(CURDATE(), '+00:00', '-05:00')
+            AND d.created_at < CONVERT_TZ(CURDATE() + INTERVAL 1 DAY, '+00:00', '-05:00');
         `;
         const result = await this.dataSource.query(sql, [
         choferId
