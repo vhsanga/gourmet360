@@ -22,6 +22,7 @@ export class ClientesChoferService {
         c.telefono AS telefonoCliente,
         c.lat,
         c.lng,
+        c.especial,
         cc.observacion,
         cc.created_at AS createdAt,
         cc.updated_at AS updatedAt,
@@ -64,7 +65,7 @@ export class ClientesChoferService {
 
   async consultarProductosAsignadosByChoferId(choferId: number) {
     const sql = `
-        select dd.id id_despacho_detalle, dd.despacho_id, dd.producto_id, p.nombre producto,  c.nombre categoria, p.precio_unitario, dd.cantidad_entregada, dd.cantidad_restante, dd.cantidad_asignada from despachos d
+        select dd.id id_despacho_detalle, dd.despacho_id, dd.producto_id, p.nombre producto,  c.nombre categoria, p.precio_unitario,  p.precio_unitario_min, dd.cantidad_entregada, dd.cantidad_restante, dd.cantidad_asignada from despachos d
         inner join despacho_detalles dd on dd.despacho_id =d.id
         inner join productos p ON p.id = dd.producto_id 
         inner join categorias c on p.id_categoria = c.id
