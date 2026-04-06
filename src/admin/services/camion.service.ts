@@ -86,6 +86,20 @@ export class CamionService {
         return result[0];
     }
 
+    async obtenerFechaUltimoDespachoPendientePorChofer(choferId: number) {
+        const sql = `
+        select  d.fecha from despachos d
+        where d.chofer_id = ? and d.estado = 'pendiente'
+        order by d.id desc
+        limit 1
+        `;
+        const result = await this.dataSource.query(sql, [
+            choferId
+        ]);
+        return result[0];
+    }
+
+
     async obtenerResumenDevolucionesPorChofer(choferId: number) {
         const sql = `
         select coalesce ( sum(d.cantidad), 0) cantidad_devuelta from devoluciones d 
