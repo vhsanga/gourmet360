@@ -147,12 +147,27 @@ export class VentasService {
   async resumenVentasClintes(fecha?: string) {
       const fechaParam = fecha || new Date().toISOString().split('T')[0];
       const sql = `
-        select c.id, c.nombre, c.contacto, c.direccion, c.telefono, c.especial,
-          (select coalesce(sum(total), 0) from ventas v where v.cliente_id = c.id and tipo_pago ='contado' AND DATE(v.fecha) = ?) venta_contado_hoy,
-          (select coalesce(sum(total), 0) from ventas v where v.cliente_id = c.id and tipo_pago ='credito' AND DATE(v.fecha) = ?) deduda_acumulada,
-          (select coalesce ( sum(d.cantidad), 0) cantidad_devuelta from devoluciones d  where  d.cliente_id = c.id 
-            AND DATE(d.created_at) = ?) devolucion_hoy
-          from clientes c 
+       select 
+          c.id, c.nombre, c.contacto, c.direccion, c.telefono, c.especial,
+
+          (select coalesce(sum(total), 0) 
+          from ventas v 
+          where v.cliente_id = c.id 
+            and tipo_pago ='contado' 
+            AND DATE(CONVERT_TZ(v.fecha, '+00:00', '-05:00')) = ?) venta_contado_hoy,
+
+          (select coalesce(sum(total), 0) 
+          from ventas v 
+          where v.cliente_id = c.id 
+            and tipo_pago ='credito' 
+            AND DATE(CONVERT_TZ(v.fecha, '+00:00', '-05:00')) = ?) deduda_acumulada,
+
+          (select coalesce(sum(d.cantidad), 0) 
+          from devoluciones d  
+          where d.cliente_id = c.id 
+            AND DATE(CONVERT_TZ(d.created_at, '+00:00', '-05:00')) = ?) devolucion_hoy
+
+        from clientes c;
       `;
       const result = await this.dataSource.query(sql, [
         fechaParam,
