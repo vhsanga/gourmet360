@@ -17,36 +17,36 @@ import { Productos } from "./Productos";
 @Entity("despacho_detalles", { schema: "gourmet360" })
 export class DespachoDetalles {
   @PrimaryGeneratedColumn({ type: "bigint", name: "id" })
-  id: number;
+  id?: number;  // Añadido ?
 
   @Column("bigint", { name: "despacho_id" })
-  despachoId: number;
+  despachoId?: number;  // Añadido ?
 
   @Column("bigint", { name: "producto_id" })
-  productoId: number;
+  productoId?: number;  // Añadido ?
 
   @Column("decimal", { name: "cantidad_entregada", precision: 10, scale: 2 })
-  cantidadEntregada: number;
+  cantidadEntregada?: number;  // Añadido ?
 
   @Column("datetime", {
     name: "created_at",
     nullable: true,
     default: () => "CURRENT_TIMESTAMP",
   })
-  createdAt: Date | null;
+  createdAt?: Date | null;  // Añadido ?
 
   @Column("datetime", {
     name: "updated_at",
     nullable: true,
     default: () => "CURRENT_TIMESTAMP",
   })
-  updatedAt: Date | null;
+  updatedAt?: Date | null;  // Añadido ?
 
   @Column("bigint", { name: "created_by", nullable: true })
-  createdBy: number | null;
+  createdBy?: number | null;  // Añadido ?
 
   @Column("bigint", { name: "updated_by", nullable: true })
-  updatedBy: number | null;
+  updatedBy?: number | null;  // Añadido ?
 
   @Column("decimal", {
     name: "cantidad_restante",
@@ -54,7 +54,7 @@ export class DespachoDetalles {
     precision: 10,
     scale: 2,
   })
-  cantidadRestante: number;
+  cantidadRestante?: number;  // Añadido ? (nota: originalmente no tenía null pero sí nullable: true)
 
   @Column("decimal", {
     name: "cantidad_asignada",
@@ -62,33 +62,33 @@ export class DespachoDetalles {
     precision: 10,
     scale: 2,
   })
-  cantidadAsignada: number | null;
+  cantidadAsignada?: number | null;  // Añadido ?
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.despachoDetalles, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "created_by", referencedColumnName: "id" }])
-  createdBy2: Usuarios;
+  createdBy2?: Usuarios;  // Añadido ?
 
   @ManyToOne(() => Despachos, (despachos) => despachos.despachoDetalles, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "despacho_id", referencedColumnName: "id" }])
-  despacho: Despachos;
+  despacho?: Despachos;  // Añadido ?
 
   @ManyToOne(() => Productos, (productos) => productos.despachoDetalles, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "producto_id", referencedColumnName: "id" }])
-  producto: Productos;
+  producto?: Productos;  // Añadido ?
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.despachoDetalles2, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "updated_by", referencedColumnName: "id" }])
-  updatedBy2: Usuarios;
+  updatedBy2?: Usuarios;  // Añadido ?
 }

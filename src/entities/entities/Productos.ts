@@ -20,19 +20,19 @@ import { VentaDetalles } from "./VentaDetalles";
 @Entity("productos", { schema: "gourmet360" })
 export class Productos {
   @PrimaryGeneratedColumn({ type: "bigint", name: "id" })
-  id: string;
+  id?: string;
 
   @Column("bigint", { name: "id_categoria" })
-  idCategoria: string;
+  idCategoria?: string;
 
   @Column("varchar", { name: "nombre", length: 150 })
-  nombre: string;
+  nombre!: string;
 
   @Column("varchar", { name: "unidad", nullable: true, length: 50 })
-  unidad: string | null;
+  unidad!: string | null;
 
   @Column("decimal", { name: "precio_unitario", precision: 10, scale: 2 })
-  precioUnitario: string;
+  precioUnitario!: string;
 
   @Column("decimal", {
     name: "precio_unitario_min",
@@ -40,7 +40,7 @@ export class Productos {
     precision: 10,
     scale: 2,
   })
-  precioUnitarioMin: string | null;
+  precioUnitarioMin!: string | null;
 
   @Column("decimal", {
     name: "costo_unitario",
@@ -48,7 +48,7 @@ export class Productos {
     precision: 10,
     scale: 2,
   })
-  costoUnitario: string | null;
+  costoUnitario!: string | null;
 
   @Column("tinyint", {
     name: "activo",
@@ -56,71 +56,71 @@ export class Productos {
     width: 1,
     default: () => "'1'",
   })
-  activo: boolean | null;
+  activo!: boolean | null;
 
   @Column("datetime", {
     name: "fecha_registro",
     nullable: true,
     default: () => "CURRENT_TIMESTAMP",
   })
-  fechaRegistro: Date | null;
+  fechaRegistro!: Date | null;
 
   @Column("datetime", {
     name: "created_at",
     nullable: true,
     default: () => "CURRENT_TIMESTAMP",
   })
-  createdAt: Date | null;
+  createdAt!: Date | null;
 
   @Column("datetime", {
     name: "updated_at",
     nullable: true,
     default: () => "CURRENT_TIMESTAMP",
   })
-  updatedAt: Date | null;
+  updatedAt!: Date | null;
 
   @Column("bigint", { name: "created_by", nullable: true })
-  createdBy: string | null;
+  createdBy?: string | null;
 
   @Column("bigint", { name: "updated_by", nullable: true })
-  updatedBy: string | null;
+  updatedB?: string | null;
 
   @OneToMany(() => CambioDetalles, (cambioDetalles) => cambioDetalles.producto)
-  cambioDetalles: CambioDetalles[];
+  cambioDetalles?: CambioDetalles[];
 
   @OneToMany(
     () => DespachoDetalles,
     (despachoDetalles) => despachoDetalles.producto
   )
-  despachoDetalles: DespachoDetalles[];
+  despachoDetalles?: DespachoDetalles[];
 
   @OneToMany(
     () => DevolucionDetalles,
     (devolucionDetalles) => devolucionDetalles.producto
   )
-  devolucionDetalles: DevolucionDetalles[];
+  devolucionDetalles?: DevolucionDetalles[];
 
   @ManyToOne(() => Categorias, (categorias) => categorias.productos, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_categoria", referencedColumnName: "id" }])
-  idCategoria2: Categorias;
+  idCategoria2?: Categorias;
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.productos, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "created_by", referencedColumnName: "id" }])
-  createdBy2: Usuarios;
+  createdBy2?: Usuarios;
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.productos2, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "updated_by", referencedColumnName: "id" }])
-  updatedBy2: Usuarios;
+  updatedBy2?: Usuarios;
 
   @OneToMany(() => VentaDetalles, (ventaDetalles) => ventaDetalles.producto)
-  ventaDetalles: VentaDetalles[];
+  ventaDetalles?: VentaDetalles[];
 }

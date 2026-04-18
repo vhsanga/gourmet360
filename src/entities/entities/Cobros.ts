@@ -17,69 +17,69 @@ import { Despachos } from "./Despachos";
 @Entity("cobros", { schema: "gourmet360" })
 export class Cobros {
   @PrimaryGeneratedColumn({ type: "bigint", name: "id" })
-  id: string;
+  id?: string;  // Añadido ?
 
   @Column("bigint", { name: "cliente_id" })
-  clienteId: string;
+  clienteId?: string;  // Añadido ?
 
   @Column("bigint", { name: "despacho_id" })
-  despachoId: string;
+  despachoId?: string;  // Añadido ?
 
   @Column("decimal", { name: "monto_cobrado", precision: 10, scale: 2 })
-  montoCobrado: string;
+  montoCobrado?: string;  // Añadido ?
 
   @Column("datetime", {
     name: "fecha",
     nullable: true,
     default: () => "CURRENT_TIMESTAMP",
   })
-  fecha: Date | null;
+  fecha?: Date | null;  // Añadido ?
 
   @Column("datetime", {
     name: "created_at",
     nullable: true,
     default: () => "CURRENT_TIMESTAMP",
   })
-  createdAt: Date | null;
+  createdAt?: Date | null;  // Añadido ?
 
   @Column("datetime", {
     name: "updated_at",
     nullable: true,
     default: () => "CURRENT_TIMESTAMP",
   })
-  updatedAt: Date | null;
+  updatedAt?: Date | null;  // Añadido ?
 
   @Column("bigint", { name: "created_by", nullable: true })
-  createdBy: string | null;
+  createdBy?: string | null;  // Añadido ?
 
   @Column("bigint", { name: "updated_by", nullable: true })
-  updatedBy: string | null;
+  updatedBy?: string | null;  // Añadido ?
 
   @ManyToOne(() => Clientes, (clientes) => clientes.cobros, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "cliente_id", referencedColumnName: "id" }])
-  cliente: Clientes;
+  cliente?: Clientes;  // Añadido ?
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.cobros, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "created_by", referencedColumnName: "id" }])
-  createdBy2: Usuarios;
+  createdBy2?: Usuarios;  // Añadido ?
 
   @ManyToOne(() => Despachos, (despachos) => despachos.cobros, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "despacho_id", referencedColumnName: "id" }])
-  despacho: Despachos;
+  despacho?: Despachos;  // Añadido ?
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.cobros2, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "updated_by", referencedColumnName: "id" }])
-  updatedBy2: Usuarios;
+  updatedBy2?: Usuarios;  // Añadido ?
 }

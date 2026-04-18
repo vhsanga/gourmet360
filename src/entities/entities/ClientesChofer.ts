@@ -9,27 +9,26 @@ import {
 @Entity('clientes_chofer')
 export class ClientesChofer {
   @PrimaryColumn({ name: 'id_cliente', type: 'bigint' })
-  idCliente: number;
+  idCliente?: number;  // Añadido ?
 
   @PrimaryColumn({ name: 'id_chofer', type: 'bigint' })
-  idChofer: number;
+  idChofer?: number;  // Añadido ?
 
   @Column({ type: 'varchar', length: 150 })
-  observacion: string;
+  observacion?: string;  // Añadido ?
 
   @CreateDateColumn({ name: 'created_at', type: 'datetime' })
-  createdAt: Date;
+  createdAt?: Date;  // Añadido ?
 
   @UpdateDateColumn({
     name: 'updated_at',
     type: 'datetime',
   })
-  updatedAt: Date;
+  updatedAt?: Date;  // Añadido ?
 
   @Column({ name: 'created_by', type: 'bigint', nullable: true })
-  createdBy: number;
+  createdBy?: number | null;  // Añadido ? (manteniendo el null)
 
   @Column({ name: 'updated_by', type: 'bigint', nullable: true })
-  updatedBy: number;
-
+  updatedBy?: number | null;  // Añadido ? (manteniendo el null)
 }

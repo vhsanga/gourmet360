@@ -53,15 +53,15 @@ export class VentasService {
           );
         }
 
-        if (despachoDetalle.cantidadRestante < item.cantidad) {
+        if ((despachoDetalle.cantidadRestante ?? 0) < item.cantidad) {
           throw new BadRequestException(
-            `Stock insuficiente del producto ${item.idProducto}. Disponible: ${despachoDetalle.cantidadRestante}`,
+            `Stock insuficiente del producto ${item.idProducto}. Disponible: ${despachoDetalle.cantidadRestante ?? 0}`,
           );
         }
 
         // 4.1 — Descontar stock
-        despachoDetalle.cantidadRestante -= item.cantidad;
-        despachoDetalle.cantidadEntregada =  Number(despachoDetalle.cantidadEntregada) + Number(item.cantidad);
+        despachoDetalle.cantidadRestante = (despachoDetalle.cantidadRestante ?? 0) - item.cantidad;
+        despachoDetalle.cantidadEntregada =  Number(despachoDetalle.cantidadEntregada ?? 0) + Number(item.cantidad);
         await queryRunner.manager.save(DespachoDetalles, despachoDetalle);
 
         // 4.2 — Guardar detalle de venta

@@ -16,16 +16,16 @@ import { Usuarios } from "./Usuarios";
 @Entity("rutas", { schema: "gourmet360" })
 export class Rutas {
   @PrimaryGeneratedColumn({ type: "bigint", name: "id" })
-  id: string;
+  id?: string;
 
   @Column("varchar", { name: "nombre", length: 150 })
-  nombre: string;
+  nombre?: string;
 
   @Column("text", { name: "descripcion", nullable: true })
-  descripcion: string | null;
+  descripcion?: string | null;
 
   @Column("bigint", { name: "chofer_id", nullable: true })
-  choferId: string | null;
+  choferId?: string | null;
 
   @Column("tinyint", {
     name: "activo",
@@ -33,49 +33,49 @@ export class Rutas {
     width: 1,
     default: () => "'1'",
   })
-  activo: boolean | null;
+  activo?: boolean | null;
 
   @Column("datetime", {
     name: "created_at",
     nullable: true,
     default: () => "CURRENT_TIMESTAMP",
   })
-  createdAt: Date | null;
+  createdAt?: Date | null;
 
   @Column("datetime", {
     name: "updated_at",
     nullable: true,
     default: () => "CURRENT_TIMESTAMP",
   })
-  updatedAt: Date | null;
+  updatedAt?: Date | null;
 
   @Column("bigint", { name: "created_by", nullable: true })
-  createdBy: string | null;
+  createdBy?: string | null;
 
   @Column("bigint", { name: "updated_by", nullable: true })
-  updatedBy: string | null;
+  updatedBy?: string | null;
 
   @OneToMany(() => RutaClientes, (rutaClientes) => rutaClientes.ruta)
-  rutaClientes: RutaClientes[];
+  rutaClientes?: RutaClientes[];
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.rutas, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "chofer_id", referencedColumnName: "id" }])
-  chofer: Usuarios;
+  chofer?: Usuarios;
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.rutas2, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "created_by", referencedColumnName: "id" }])
-  createdBy2: Usuarios;
+  createdBy2?: Usuarios;
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.rutas3, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "updated_by", referencedColumnName: "id" }])
-  updatedBy2: Usuarios;
+  updatedBy2?: Usuarios;
 }
