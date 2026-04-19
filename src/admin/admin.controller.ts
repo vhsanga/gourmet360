@@ -10,6 +10,8 @@ import { VentasService } from './services/ventas.service';
 import { CreateCamionDto } from './dtos/create-camion.dto';
 import { CambiosService } from './services/cambios.service';
 import { CreateCambioDto } from './dtos/create-cambio.dto';
+import { CreateProductoDto } from './dtos/create-producto.dto';
+import { CategoriaServices } from './services/categoria.services';
 
 @Controller('admin')
 export class AdminController {
@@ -18,6 +20,7 @@ export class AdminController {
       private readonly camionesService: CamionService,
       private readonly productoService: ProductoServices,
       private readonly cambiosService: CambiosService,
+      private readonly categoriaService: CategoriaServices,
       private ventasService: VentasService
     ) {}
 
@@ -107,5 +110,32 @@ export class AdminController {
     const data = await this.ventasService.ventasClienteRangoFecha(clienteId, fechaInicio, fechaFin);
     return CustomUtils.responseApi('Ventas a un cliente en un rango de fechas', data);
   }
+
+  @Post('crear-producto')
+  async crearProducto(@Body() dto: CreateProductoDto) {
+    const producto = await this.productoService.crearProducto(dto);
+    return CustomUtils.responseApi('Producto creado exitosamente', producto);
+  }
+
+  
+  @Post('crear-categoria')
+  async crearCategoria(@Body('nombre') nombre: string) {
+    const categoria = await this.categoriaService.crearCategoria(nombre);
+    return CustomUtils.responseApi('Categoría creada exitosamente', categoria);
+  }
+
+  @Get('listar-categorias')
+  async listarCategorias() {
+    const categorias = await this.categoriaService.listarCategorias();
+    return CustomUtils.responseApi('Lista de categorías', categorias);
+  }
+
+  @Get('detalle-productos-restantes/:idchofer')
+  async obtenerDetallePRoductosRestantes(@Param('idchofer') idchofer: number) {
+    const categorias = await this.despachosService.obtenerDetallePRoductosRestantes(idchofer);
+    return CustomUtils.responseApi('Lista de categorías', categorias);
+  }
+
+  
 
 }

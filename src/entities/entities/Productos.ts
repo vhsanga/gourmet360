@@ -83,7 +83,7 @@ export class Productos {
   createdBy?: string | null;
 
   @Column("bigint", { name: "updated_by", nullable: true })
-  updatedB?: string | null;
+  updatedBy?: string | null;
 
   @OneToMany(() => CambioDetalles, (cambioDetalles) => cambioDetalles.producto)
   cambioDetalles?: CambioDetalles[];

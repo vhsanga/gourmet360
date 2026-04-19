@@ -15,7 +15,8 @@ export class AuthService {
   async validateUser(celular: string, password: string): Promise<any> {
     const user = await this.usuariosService.findOneByCelular(celular);
     if (!user) throw new UnauthorizedException('Usuario no encontrado');
-
+    if (!user.id) throw new UnauthorizedException('Usuario inválido');
+    await this.usuariosService.verificarUsuarioActivo(user.id);
     const isMatch = await bcrypt.compare(password, user.pin);
     if (!isMatch) throw new UnauthorizedException('Pin incorrect');
 

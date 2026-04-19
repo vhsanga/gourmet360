@@ -48,7 +48,7 @@ export class Usuarios {
     width: 1,
     default: () => "'1'",
   })
-  activo?: boolean | null;
+  activo!: boolean | null;
 
   @Column("datetime", {
     name: "created_at",

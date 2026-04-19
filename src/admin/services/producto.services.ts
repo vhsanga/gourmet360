@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Productos } from "src/entities/entities/Productos";
 import { Repository } from "typeorm";
+import { CreateProductoDto } from "../dtos/create-producto.dto";
 
 
 @Injectable()
@@ -28,7 +29,21 @@ export class ProductoServices{
             .getRawMany();
     }
 
-    
-
-
+    async crearProducto(dto: CreateProductoDto): Promise<Productos> {
+        const producto = new Productos();
+        producto.idCategoria = dto.idCategoria;
+        producto.nombre = dto.nombre;
+        producto.precioUnitario = dto.precioUnitario.toString();
+        if (dto.precioUnitarioMin !== undefined) {
+            producto.precioUnitarioMin = dto.precioUnitarioMin.toString();
+        }
+        if (dto.costoUnitario !== undefined) {
+            producto.costoUnitario = dto.costoUnitario.toString();
+        }
+        producto.activo = true;
+        producto.fechaRegistro = new Date();
+        producto.createdAt = new Date();
+        producto.updatedAt = new Date();
+        return await this.productoRepository.save(producto);
+    }
 }

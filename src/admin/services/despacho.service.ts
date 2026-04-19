@@ -50,4 +50,18 @@ export class DespachoService {
     await this.despachoRepo.save(despacho);
     return CustomUtils.responseApi('Gastos guardado correctamente');
   }
+
+  async obtenerDetallePRoductosRestantes(choferId: number) {
+        const sql = `
+         select dd.cantidad_restante, dd.producto_id, p.nombre 
+          from despacho_detalles dd 
+          inner join despachos d on dd.despacho_id  =d.id 
+          inner join productos p on dd.producto_id = p.id
+          where d.estado ='pendiente' and d.chofer_id =?
+        `;
+        const result = await this.dataSource.query(sql, [
+        choferId
+        ]);
+        return result;
+    } 
 }

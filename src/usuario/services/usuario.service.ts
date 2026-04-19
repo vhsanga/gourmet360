@@ -29,6 +29,19 @@ export class UsuarioService {
     return usuario;
   }
 
+  async inactivarUsuarioUsuario(id: number) {
+    const usuario = await this.findOneByID(id);
+    usuario.activo = false;
+    return await this.repo.save(usuario);
+  }
+  
+  async verificarUsuarioActivo(id: number) {
+    const usuario = await this.findOneByID(id);
+    if(!usuario) throw new NotFoundException(`Usuario con id ${id} no encontrado`);
+    if(usuario.activo === null) throw new NotFoundException(`Usuario no autorizado`);
+    if(!usuario.activo) throw new NotFoundException(`Usuario inactivo`);
+  }
+
   update(id: number, updateUsuarioDto: UpdateUsuarioDto) {
     return `This action updates a #${id} usuario`;
   }

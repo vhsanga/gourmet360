@@ -17,10 +17,12 @@ import { DevolucionDetalles } from 'src/entities/entities/DevolucionDetalles';
 import { Cambios } from 'src/entities/entities/Cambios';
 import { CambioDetalles } from 'src/entities/entities/CambioDetalles';
 import { CambiosService } from './services/cambios.service';
+import { CategoriaServices } from './services/categoria.services';
+import { Categorias } from 'src/entities/entities/Categorias';
 
 @Module({
-  imports: [UsuarioModule,  TypeOrmModule.forFeature([Despachos, DespachoDetalles, Camiones, Productos, Ventas, VentaDetalles, Devoluciones, DevolucionDetalles, Cambios, CambioDetalles, ])],
-  providers: [DespachoService, CamionService, ProductoServices, VentasService, CambiosService],
+  imports: [UsuarioModule,  TypeOrmModule.forFeature([Despachos, DespachoDetalles, Camiones, Productos, Ventas, VentaDetalles, Devoluciones, DevolucionDetalles, Cambios, CambioDetalles, Categorias ])],
+  providers: [DespachoService, CamionService, ProductoServices, VentasService, CambiosService, CategoriaServices],
   controllers: [AdminController]
 })
 export class AdminModule {}

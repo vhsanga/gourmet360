@@ -29,6 +29,7 @@ export class UsuarioController {
 
   @Get('data-home')
   async dataHome(@Query('idChofer') idChofer: number) {
+    await this.usuarioService.verificarUsuarioActivo(idChofer);
     let despachoPendiente= await this.clientesChoferService.consultarDespachoPendientes(idChofer);
     let clientes= await this.clientesChoferService.listarClientesPorChofer(idChofer, despachoPendiente.id);
     let productos= await this.clientesChoferService.consultarProductosAsignadosByChoferId(idChofer);
@@ -86,4 +87,11 @@ export class UsuarioController {
     const totalDevoluciones = await this.devolucionesService.getTotalDevolucionesPorClienteHoy(clienteId);
     return CustomUtils.responseApi('Total de devoluciones del cliente en las últimas 24 horas', { totalDevoluciones });
   }
+
+  @Post('inactivar-usuario')
+  async inactivarUsuario(@Body('idusuario') id: number) {
+    await this.usuarioService.inactivarUsuarioUsuario(id);
+    return CustomUtils.responseApi('Usuario inactivado correctamente', null);
+  }
+
 }
