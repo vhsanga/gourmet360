@@ -33,6 +33,7 @@ export class CamionService {
             'u.nombre',
             'u.celular',
             ])
+            .where('u.activo = :activo', { activo: true })
             .orderBy('camion.id', 'ASC')
             .getRawMany();
     }
