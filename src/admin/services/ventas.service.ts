@@ -187,7 +187,7 @@ export class VentasService {
         WHERE cliente_id = ?
           AND fecha >= CONVERT_TZ(?, '-05:00', '+00:00')
           AND fecha <  CONVERT_TZ(?, '-05:00', '+00:00')
-        GROUP BY DATE(CONVERT_TZ(fecha, '+00:00', '-05:00'))
+        GROUP BY 1
         ORDER BY dia ASC;
       `;
       const result = await this.dataSource.query(sql, [
