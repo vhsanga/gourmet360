@@ -180,7 +180,7 @@ export class VentasService {
   async ventasClienteRangoFecha(clienteId: number, fechaInicio: string, fechaFin: string) {
       const sql = `
         SELECT 
-            DATE(CONVERT_TZ(fecha, '+00:00', '-05:00')) AS dia,
+            DATE_FORMAT(CONVERT_TZ(fecha, '+00:00', '-05:00'), '%Y-%m-%d') AS dia,
             SUM(CASE WHEN tipo_pago = 'contado' THEN total ELSE 0 END) AS total_contado,
             SUM(CASE WHEN tipo_pago = 'credito' THEN total ELSE 0 END) AS total_credito
         FROM ventas
