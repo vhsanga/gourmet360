@@ -106,8 +106,8 @@ export class CamionService {
         SELECT COALESCE(SUM(d.cantidad), 0) AS cantidad_devuelta
             FROM devoluciones d
             WHERE d.chofer_id = ?
-            AND d.fecha_devolucion >= CONVERT_TZ(CURDATE(), '+00:00', '-05:00')
-            AND d.fecha_devolucion < CONVERT_TZ(CURDATE() + INTERVAL 1 DAY, '+00:00', '-05:00');
+            AND d.fecha_devolucion >= CURDATE()
+            AND d.fecha_devolucion < CURDATE() + INTERVAL 1 DAY;
         `;
         const result = await this.dataSource.query(sql, [
         choferId

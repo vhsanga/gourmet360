@@ -90,26 +90,26 @@ export class VentasService {
   async obtenerResumenVentasPorFecha(fecha: string) {
     const fechaInicio = `${fecha} 00:00:00`;
     const sql = `
-      SELECT
-        SUM(CASE WHEN v.tipo_pago = 'contado' THEN v.total ELSE 0 END) AS total_ventas_contado,
-        SUM(CASE WHEN v.tipo_pago = 'credito' THEN v.total ELSE 0 END) AS total_ventas_credito,
-        MAX(vd.cantidad_vendida) AS cantidad_vendida,
-        MAX(dd.cantidad_devuelta) AS cantidad_devuelta
-    FROM ventas v
-    LEFT JOIN (
-        SELECT SUM(cantidad) AS cantidad_vendida
-        FROM venta_detalles
-        WHERE CONVERT_TZ(created_at, '+00:00', '-05:00') >= ?
-          AND CONVERT_TZ(created_at, '+00:00', '-05:00') < DATE_ADD(?, INTERVAL 1 DAY)
-    ) vd ON 1=1
-    LEFT JOIN (
-        SELECT COALESCE(SUM(cantidad),0) AS cantidad_devuelta
-        FROM devoluciones
-        WHERE CONVERT_TZ(created_at, '+00:00', '-05:00') >= ?
-          AND CONVERT_TZ(created_at, '+00:00', '-05:00') < DATE_ADD(?, INTERVAL 1 DAY)
-    ) dd ON 1=1
-    WHERE CONVERT_TZ(v.fecha, '+00:00', '-05:00') >= ?
-      AND CONVERT_TZ(v.fecha, '+00:00', '-05:00') < DATE_ADD(?, INTERVAL 1 DAY);
+     SELECT
+          SUM(CASE WHEN v.tipo_pago = 'contado' THEN v.total ELSE 0 END) AS total_ventas_contado,
+          SUM(CASE WHEN v.tipo_pago = 'credito' THEN v.total ELSE 0 END) AS total_ventas_credito,
+          MAX(vd.cantidad_vendida) AS cantidad_vendida,
+          MAX(dd.cantidad_devuelta) AS cantidad_devuelta
+      FROM ventas v
+      LEFT JOIN (
+          SELECT SUM(cantidad) AS cantidad_vendida
+          FROM venta_detalles
+          WHERE created_at >= ?
+            AND created_at < DATE_ADD(?, INTERVAL 1 DAY)
+      ) vd ON 1=1
+      LEFT JOIN (
+          SELECT COALESCE(SUM(cantidad),0) AS cantidad_devuelta
+          FROM devoluciones
+          WHERE created_at >= ?
+            AND created_at < DATE_ADD(?, INTERVAL 1 DAY)
+      ) dd ON 1=1
+      WHERE v.fecha >= ?
+        AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY);
     `;
 
     const result = await this.dataSource.query(sql, [
@@ -134,8 +134,8 @@ export class VentasService {
           COALESCE(SUM(cantidad_entregada), 0) AS cantidad_entregada,
           COALESCE(SUM(cantidad_restante), 0) AS cantidad_restante
       FROM despacho_detalles dd
-      WHERE dd.created_at >= CONVERT_TZ(?, '-05:00', '+00:00')
-        AND dd.created_at <  CONVERT_TZ(DATE_ADD(?, INTERVAL 1 DAY), '-05:00', '+00:00');
+      WHERE dd.created_at >= ?
+        AND dd.created_at < DATE_ADD(?, INTERVAL 1 DAY);
     `;
     const result = await this.dataSource.query(sql, [
       fechaInicio,
@@ -147,27 +147,33 @@ export class VentasService {
   async resumenVentasClintes(fecha?: string) {
       const fechaParam = fecha || new Date().toISOString().split('T')[0];
       const sql = `
-       select 
+       SELECT 
           c.id, c.nombre, c.contacto, c.direccion, c.telefono, c.especial,
 
-          (select coalesce(sum(total), 0) 
-          from ventas v 
-          where v.cliente_id = c.id 
-            and tipo_pago ='contado' 
-            AND DATE(CONVERT_TZ(v.fecha, '+00:00', '-05:00')) = ?) venta_contado_hoy,
+          (SELECT COALESCE(SUM(total), 0) 
+          FROM ventas v 
+          WHERE v.cliente_id = c.id 
+            AND tipo_pago = 'contado' 
+            AND v.fecha >= ?
+            AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
+          ) AS venta_contado_hoy,
 
-          (select coalesce(sum(total), 0) 
-          from ventas v 
-          where v.cliente_id = c.id 
-            and tipo_pago ='credito' 
-            AND DATE(CONVERT_TZ(v.fecha, '+00:00', '-05:00')) = ?) deduda_acumulada,
+          (SELECT COALESCE(SUM(total), 0) 
+          FROM ventas v 
+          WHERE v.cliente_id = c.id 
+            AND tipo_pago = 'credito' 
+            AND v.fecha >= ?
+            AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
+          ) AS deduda_acumulada,
 
-          (select coalesce(sum(d.cantidad), 0) 
-          from devoluciones d  
-          where d.cliente_id = c.id 
-            AND DATE(CONVERT_TZ(d.created_at, '+00:00', '-05:00')) = ?) devolucion_hoy
+          (SELECT COALESCE(SUM(d.cantidad), 0) 
+          FROM devoluciones d  
+          WHERE d.cliente_id = c.id 
+            AND d.created_at >= ?
+            AND d.created_at < DATE_ADD(?, INTERVAL 1 DAY)
+          ) AS devolucion_hoy
 
-        from clientes c;
+      FROM clientes c;
       `;
       const result = await this.dataSource.query(sql, [
         fechaParam,
@@ -180,14 +186,14 @@ export class VentasService {
   async ventasClienteRangoFecha(clienteId: number, fechaInicio: string, fechaFin: string) {
       const sql = `
         SELECT 
-            DATE_FORMAT(CONVERT_TZ(fecha, '+00:00', '-05:00'), '%Y-%m-%d') AS dia,
+            DATE_FORMAT(fecha, '%Y-%m-%d') AS dia,
             SUM(CASE WHEN tipo_pago = 'contado' THEN total ELSE 0 END) AS total_contado,
             SUM(CASE WHEN tipo_pago = 'credito' THEN total ELSE 0 END) AS total_credito
         FROM ventas
         WHERE cliente_id = ?
-          AND fecha >= CONVERT_TZ(?, '-05:00', '+00:00')
-          AND fecha <  CONVERT_TZ(?, '-05:00', '+00:00')
-        GROUP BY 1
+          AND fecha >= ?
+          AND fecha < ?
+        GROUP BY dia
         ORDER BY dia ASC;
       `;
       const result = await this.dataSource.query(sql, [
