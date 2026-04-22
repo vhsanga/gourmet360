@@ -26,6 +26,7 @@ import { ClientesChofer } from './entities/entities/ClientesChofer';
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
+      timezone: '-05:00',
       host: '62.146.172.94',
       port: 3306,
       username: 'remoto',
