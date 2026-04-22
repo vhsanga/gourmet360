@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ExceptionsFilter } from './utils/filters/exceptions.filter';
 import { ResponseInterceptor } from './utils/interceptors/response.interceptor';
+import { LoggerInterceptor } from './utils/interceptors/logger.interceptor';
 import { useContainer } from 'class-validator';
 
 async function bootstrap() {
@@ -25,6 +26,7 @@ async function bootstrap() {
 
   app.useGlobalFilters(new ExceptionsFilter());
   app.useGlobalInterceptors(new ResponseInterceptor());
+  app.useGlobalInterceptors(new LoggerInterceptor());
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   await app.listen(process.env.PORT ?? 3000);
 }
