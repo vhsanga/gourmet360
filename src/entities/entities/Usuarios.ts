@@ -16,6 +16,7 @@ import { DespachoDetalles } from "./DespachoDetalles";
 import { Despachos } from "./Despachos";
 import { DevolucionDetalles } from "./DevolucionDetalles";
 import { Devoluciones } from "./Devoluciones";
+import { GastoDespacho } from "./GastoDespacho";
 import { Productos } from "./Productos";
 import { Rendiciones } from "./Rendiciones";
 import { RutaClientes } from "./RutaClientes";
@@ -212,4 +213,7 @@ export class Usuarios {
 
   @OneToMany(() => Ventas, (ventas) => ventas.updatedBy2)
   ventas2?: Ventas[];
+
+  @OneToMany(() => GastoDespacho, (gastoDespacho) => gastoDespacho.chofer)
+  gastoDespachos?: GastoDespacho[];
 }

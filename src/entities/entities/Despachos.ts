@@ -13,6 +13,7 @@ import { Camiones } from "./Camiones";
 import { Usuarios } from "./Usuarios";
 import { Rendiciones } from "./Rendiciones";
 import { Ventas } from "./Ventas";
+import { GastoDespacho } from "./GastoDespacho";
 
 @Index("fk_despachos_camion", ["camionId"], {})
 @Index("fk_despachos_chofer", ["choferId"], {})
@@ -110,4 +111,7 @@ export class Despachos {
 
   @OneToMany(() => Ventas, (ventas) => ventas.despacho)
   ventas?: Ventas[];  // Añadido ?
+
+  @OneToMany(() => GastoDespacho, (gastoDespacho) => gastoDespacho.despacho)
+  gastoDespachos?: GastoDespacho[];  // Añadido ?
 }

@@ -5,12 +5,16 @@ import { CreateDespachoDto } from '../dtos/create-despacho.dto';
 import { Despachos } from 'src/entities/entities/Despachos';
 import { DespachoDetalles } from 'src/entities/entities/DespachoDetalles';
 import { CustomUtils } from 'src/utils/custom_utils';
+import { GastoDespacho } from 'src/entities/entities/GastoDespacho';
+import { GastoDetalleItemDto } from '../dtos/create-registro-gasto.dto';
 
 @Injectable()
 export class DespachoService {
     constructor(
     @InjectRepository(Despachos) private despachoRepo: Repository<Despachos>,
     @InjectRepository(DespachoDetalles) private detalleRepo: Repository<DespachoDetalles>,
+    @InjectRepository(GastoDespacho) private gastoDespachoRepo: Repository<GastoDespacho>,
+    
     private dataSource: DataSource,
   ) {}
 
@@ -41,14 +45,35 @@ export class DespachoService {
     });
   }
 
-  async actualizarGastoDespacho(despachoId: number, gastos: number) {
+  async actualizarGastoDespacho(gastosDetalle: GastoDetalleItemDto[]) {
+    if(gastosDetalle.length == 0){
+      throw new Error('No hay detalles'); 
+    }
+    const despachoId = gastosDetalle[0].idDespacho;
+    var sumaGasto = 0;
+    gastosDetalle.map( (item)=>{
+      sumaGasto+= item.valor;
+    });
+    
     const despacho = await this.despachoRepo.findOne({where: {id: despachoId}});
     if (!despacho) {
       throw new Error('Despacho no encontrado');
     } 
-    despacho.gastos = gastos;
+    despacho.gastos = sumaGasto;
     await this.despachoRepo.save(despacho);
-    return CustomUtils.responseApi('Gastos guardado correctamente');
+
+    return await this.dataSource.transaction(async (manager) => {
+    const detalles = gastosDetalle.map(det => {
+        return manager.create(GastoDespacho, {
+          idDespacho: det.idDespacho,
+          idChofer: det.idChofer,
+          detalle: det.detalle,
+          valor: det.valor  
+        });
+      });
+      
+      await manager.save(GastoDespacho, detalles);
+    });
   }
 
   async obtenerDetallePRoductosRestantes(choferId: number) {

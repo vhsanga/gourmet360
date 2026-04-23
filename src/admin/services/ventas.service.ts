@@ -206,4 +206,18 @@ export class VentasService {
       ]);
       return result;
   } 
+
+  async pagarVentaCredito(ventaId: number, monto: number) {
+    const venta = await this.dataSource.getRepository(Ventas).findOneBy({ id: ventaId });
+    if (!venta) {
+      throw new NotFoundException('Venta no encontrada');
+    }
+    if (venta.tipoPago !== 'credito') {
+      throw new BadRequestException('La venta no es de tipo crédito');
+    }
+    venta.pagado = (venta.pagado ?? 0) + monto;
+    venta.fechaPago = new Date();
+    await this.dataSource.getRepository(Ventas).save(venta);
+    return CustomUtils.responseApi('Pago registrado con éxito', { ventaId: venta.id, montoPagado: monto });
+  }
 }

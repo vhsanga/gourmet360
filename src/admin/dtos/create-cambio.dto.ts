@@ -2,23 +2,23 @@ import { IsArray, IsNumber, IsString } from 'class-validator';
 
 export class CambioItemDto {
   @IsNumber()
-  productoId: number;
+  productoId?: number;
 
   @IsNumber()
-  cantidadDevuelta: number;
+  cantidadDevuelta?: number;
 }
 
 export class CreateCambioDto {
 
   @IsNumber()
-  clienteId: number;
+  clienteId!: number;
 
   @IsNumber()
-  choferId: number;
+  choferId!: number;
 
   @IsString()
-  observacion: string;  
+  observacion?: string;  
 
   @IsArray()
-  items: CambioItemDto[];
+  items!: CambioItemDto[];
 }

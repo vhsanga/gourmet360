@@ -12,6 +12,7 @@ import { CambiosService } from './services/cambios.service';
 import { CreateCambioDto } from './dtos/create-cambio.dto';
 import { CreateProductoDto } from './dtos/create-producto.dto';
 import { CategoriaServices } from './services/categoria.services';
+import { GastoDetalleItemDto } from './dtos/create-registro-gasto.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -100,9 +101,10 @@ export class AdminController {
     return CustomUtils.responseApi('Resumen de ventas por clientes', data);
   }
 
-  @Post('update-gasto-despacho/:despachoId')
-  async updateGastoDespacho(@Param('despachoId') despachoId: number, @Body('gastos') gastos: number) {
-    return this.despachosService.actualizarGastoDespacho(despachoId, gastos);
+  @Post('update-gasto-despacho')
+  async updateGastoDespacho( @Body('gastos') gastosDetalle: GastoDetalleItemDto[]) {
+    await this.despachosService.actualizarGastoDespacho(gastosDetalle);
+    return CustomUtils.responseApi('Gastos guardado correctamente');
   }
 
   @Post('ventas-cliente-rango')
@@ -134,6 +136,12 @@ export class AdminController {
   async obtenerDetallePRoductosRestantes(@Param('idchofer') idchofer: number) {
     const categorias = await this.despachosService.obtenerDetallePRoductosRestantes(idchofer);
     return CustomUtils.responseApi('Lista de categorías', categorias);
+  }
+
+  @Post('pagar-venta-credito')
+  async pagarVentaCredito(@Body('ventaId')  ventaId: number, @Body('monto') monto: number) {
+    const pago = await this.ventasService.pagarVentaCredito(ventaId, monto);
+    return pago;
   }
 
   
