@@ -179,6 +179,9 @@ export class VentasService {
         fechaParam,
         fechaParam,
         fechaParam,
+        fechaParam,
+        fechaParam,
+        fechaParam,
       ]);
       return result;
   } 
