@@ -22,6 +22,7 @@ import { Cambios } from './entities/entities/Cambios';
 import { CambioDetalles } from './entities/entities/CambioDetalles';
 import { ClientesChofer } from './entities/entities/ClientesChofer';
 import { GastoDespacho } from './entities/entities/GastoDespacho';
+import { ClienteProducto } from './entities/entities/ClienteProductos';
 
 @Module({
   imports: [
@@ -33,7 +34,7 @@ import { GastoDespacho } from './entities/entities/GastoDespacho';
       username: 'remoto',
       password: 'P@ss4930',
       database: 'gourmet360',
-      entities: [Usuarios, Clientes, ClientesChofer, Categorias, Productos, Camiones, Rutas, RutaClientes, Despachos, DespachoDetalles, Ventas, VentaDetalles, Cobros, Rendiciones, Devoluciones, DevolucionDetalles, Cambios, CambioDetalles, GastoDespacho, ],
+      entities: [Usuarios, Clientes, ClientesChofer, Categorias, Productos, Camiones, Rutas, RutaClientes, Despachos, DespachoDetalles, Ventas, VentaDetalles, Cobros, Rendiciones, Devoluciones, DevolucionDetalles, Cambios, CambioDetalles, GastoDespacho, ClienteProducto, ],
       //synchronize: true, // ⚠️ Solo en desarrollo
     }),
     UsuarioModule,

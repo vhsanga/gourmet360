@@ -1,15 +1,20 @@
-import { IsNumber, IsPositive, IsNotEmpty } from 'class-validator';
+import { IsNumber, IsPositive, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateVentaDetalleDto {
   @IsNumber()
   @IsNotEmpty()
-  idProducto: number;
+  idProducto!: number;
 
   @IsNumber()
   @IsPositive()
-  cantidad: number;
+  cantidad!: number;
 
   @IsNumber()
   @IsPositive()
-  precioUnitario: number;
+  precioUnitario!: number;
+
+  @IsNumber()
+  @IsPositive()
+  @IsOptional()
+  precioCliente?: number;
 }

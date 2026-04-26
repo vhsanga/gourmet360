@@ -7,6 +7,7 @@ import { CustomUtils } from 'src/utils/custom_utils';
 import { ClientesChoferService } from './services/cliente-chofer.service';
 import { CreateClienteDto } from './dto/create-cliente.dto';
 import { DevolucionesService } from './services/devoluciones.services';
+import { CreateDevolucionDto } from './dto/create-devolucion.dto';
 
 @Controller('usuario')
 export class UsuarioController {
@@ -77,9 +78,9 @@ export class UsuarioController {
   }
 
   @Post('devolucion')
-  async registrarDevolucion(@Body('cantidad') cantidad: number, @Body('clienteId') clienteId: number, @Body('choferId') choferId: number) {
-    const devolucion = await this.devolucionesService.guardarDevolucion(cantidad, clienteId, choferId);
-    return CustomUtils.responseApi('Devolución registrada con éxito', devolucion);
+  async registrarDevolucion(@Body() data: CreateDevolucionDto) {
+    const devolucion = await this.devolucionesService.guardarDevolucion(data);
+    return devolucion
   }
 
   @Get('devoluciones-cliente')
@@ -92,6 +93,12 @@ export class UsuarioController {
   async inactivarUsuario(@Body('idusuario') id: number) {
     await this.usuarioService.inactivarUsuarioUsuario(id);
     return CustomUtils.responseApi('Usuario inactivado correctamente', null);
+  }
+
+  @Post('consultar-productos-cliente')
+  async consultarProductosAsignadosByChoferIdParaCliente(@Body('idChofer') idChofer: number, @Body('idCliente') idCliente: number) {
+   let productos= await this.clientesChoferService.consultarProductosAsignadosByChoferIdParaCliente(idChofer, idCliente);
+   return CustomUtils.responseApi('Lista de clientes', { productos});
   }
 
 }

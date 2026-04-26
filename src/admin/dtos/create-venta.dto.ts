@@ -6,26 +6,26 @@ export class CreateVentaDto {
 
   @IsNumber()
   @IsNotEmpty()
-  idChofer: number;
+  idChofer!: number;
 
   @IsNumber()
   @IsNotEmpty()
-  idCliente: number;
+  idCliente!: number;
 
   @IsNumber()
   @IsNotEmpty()
-  idDespacho: number;
+  idDespacho!: number;
 
   @IsString()
   @IsNotEmpty()
-  tipoPago: "contado" | "credito";
+  tipoPago!: "contado" | "credito";
 
   @IsNumber()
   @IsNotEmpty()
-  total: number;
+  total!: number;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateVentaDetalleDto)
-  detalles: CreateVentaDetalleDto[];
+  detalles!: CreateVentaDetalleDto[];
 }

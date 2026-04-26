@@ -11,6 +11,7 @@ import { Ventas } from 'src/entities/entities/Ventas';
 import { Repository, DataSource } from 'typeorm';
 import { CreateVentaDto } from '../dtos/create-venta.dto';
 import { CustomUtils } from 'src/utils/custom_utils';
+import { ClienteProducto } from 'src/entities/entities/ClienteProductos';
 
 @Injectable()
 export class VentasService {
@@ -73,6 +74,14 @@ export class VentasService {
         detalleVenta.createdBy = idChofer;
 
         await queryRunner.manager.save(VentaDetalles, detalleVenta);
+
+        if(item.precioCliente) {
+          const clienteProducto = new ClienteProducto();
+          clienteProducto.idCliente = idCliente;
+          clienteProducto.productoId = item.idProducto;
+          clienteProducto.precio = item.precioCliente;
+          await queryRunner.manager.save(ClienteProducto, clienteProducto);
+        }
       }
 
       // 5️⃣ Confirmar transacción

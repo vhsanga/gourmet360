@@ -74,6 +74,18 @@ export class ClientesChoferService {
     return await this.clientesChoferRepo.query(sql, [choferId]);
   }
 
+  async consultarProductosAsignadosByChoferIdParaCliente(choferId: number, clienteId: number) {
+    const sql = `
+        select dd.id id_despacho_detalle, dd.despacho_id, dd.producto_id, p.nombre producto,  c.nombre categoria, cp.precio precio_cliente, p.precio_unitario,  p.precio_unitario_min, dd.cantidad_entregada, dd.cantidad_restante, dd.cantidad_asignada from despachos d
+        inner join despacho_detalles dd on dd.despacho_id =d.id
+        inner join productos p ON p.id = dd.producto_id 
+        inner join categorias c on p.id_categoria = c.id
+        left join cliente_producto cp on p.id = cp.producto_id and cp.cliente_id=?
+        where d.chofer_id = ? and d.estado ='pendiente'
+      `;
+    return await this.clientesChoferRepo.query(sql, [clienteId, choferId]);
+  }
+
   /**
    * Obtener los despachos pendientes, la fecha es el ultimo despacho pendiente, el campo asignado es acumulado
    * @param choferId Id del chofer

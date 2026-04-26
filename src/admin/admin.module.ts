@@ -20,9 +20,10 @@ import { CambiosService } from './services/cambios.service';
 import { CategoriaServices } from './services/categoria.services';
 import { Categorias } from 'src/entities/entities/Categorias';
 import { GastoDespacho } from 'src/entities/entities/GastoDespacho';
+import { ClienteProducto } from 'src/entities/entities/ClienteProductos';
 
 @Module({
-  imports: [UsuarioModule,  TypeOrmModule.forFeature([Despachos, DespachoDetalles, Camiones, Productos, Ventas, VentaDetalles, Devoluciones, DevolucionDetalles, Cambios, CambioDetalles, Categorias, GastoDespacho ])],
+  imports: [UsuarioModule,  TypeOrmModule.forFeature([Despachos, DespachoDetalles, Camiones, Productos, Ventas, VentaDetalles, Devoluciones, DevolucionDetalles, Cambios, CambioDetalles, Categorias, GastoDespacho, ClienteProducto ])],
   providers: [DespachoService, CamionService, ProductoServices, VentasService, CambiosService, CategoriaServices],
   controllers: [AdminController]
 })
