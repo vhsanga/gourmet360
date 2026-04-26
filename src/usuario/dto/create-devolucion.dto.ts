@@ -10,6 +10,9 @@ export class CreateDevolucionDto{
     @IsNumber()
     choferId!:number;
 
+    @IsNumber()
+    despachoId!:number;
+
     @IsArray()
     detalles!:DetalleDevolucionDto[];
 }
