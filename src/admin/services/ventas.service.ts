@@ -156,35 +156,56 @@ export class VentasService {
   async resumenVentasClintes(fecha?: string) {
       const fechaParam = fecha || new Date().toISOString().split('T')[0];
       const sql = `
-       SELECT 
-          c.id, c.nombre, c.contacto, c.direccion, c.telefono, c.especial,
+      SELECT 
+          c.id,  
+          c.nombre, 
+          c.contacto, 
+          c.direccion, 
+          c.telefono, 
+          c.especial,
 
-          (SELECT COALESCE(SUM(total), 0) 
+          (SELECT COALESCE(SUM(
+              CASE 
+                  WHEN v.pagado IS NOT NULL THEN v.pagado
+                  ELSE v.total
+              END
+          ), 0)
           FROM ventas v 
           WHERE v.cliente_id = c.id 
-            AND tipo_pago = 'contado' 
+            AND (v.tipo_pago = 'contado' or v.pagado is not null )
             AND v.fecha >= ?
             AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
           ) AS venta_contado_hoy,
 
-          (SELECT COALESCE(SUM(total), 0) 
+          (SELECT COALESCE(SUM(v.total - COALESCE(v.pagado, 0)), 0) 
           FROM ventas v 
           WHERE v.cliente_id = c.id 
-            AND tipo_pago = 'credito' 
+            AND v.tipo_pago = 'credito' 
             AND v.fecha >= ?
             AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
-          ) AS deduda_acumulada,
+          ) AS deuda_acumulada,
 
           (SELECT COALESCE(SUM(d.cantidad), 0) 
           FROM devoluciones d  
           WHERE d.cliente_id = c.id 
             AND d.created_at >= ?
             AND d.created_at < DATE_ADD(?, INTERVAL 1 DAY)
-          ) AS devolucion_hoy
+          ) AS devolucion_hoy,
+
+          (SELECT v.id
+          FROM ventas v 
+          WHERE v.cliente_id = c.id 
+            AND v.tipo_pago = 'credito' 
+            AND v.fecha >= ?
+            AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
+          LIMIT 1
+          ) AS id_venta
 
       FROM clientes c;
       `;
       const result = await this.dataSource.query(sql, [
+        fechaParam,
+        fechaParam,
         fechaParam,
         fechaParam,
         fechaParam,
@@ -198,14 +219,16 @@ export class VentasService {
   async ventasClienteRangoFecha(clienteId: number, fechaInicio: string, fechaFin: string) {
       const sql = `
         SELECT 
+            id id_venta,
             DATE_FORMAT(fecha, '%Y-%m-%d') AS dia,
             SUM(CASE WHEN tipo_pago = 'contado' THEN total ELSE 0 END) AS total_contado,
-            SUM(CASE WHEN tipo_pago = 'credito' THEN total ELSE 0 END) AS total_credito
+            SUM(CASE WHEN tipo_pago = 'credito' THEN total ELSE 0 END) AS total_credito,
+             SUM(CASE WHEN tipo_pago = 'credito' THEN pagado  ELSE 0 END) AS total_pagado
         FROM ventas
         WHERE cliente_id = ?
           AND fecha >= ?
           AND fecha < ?
-        GROUP BY dia
+        GROUP BY id, dia
         ORDER BY dia ASC;
       `;
       const result = await this.dataSource.query(sql, [
@@ -224,9 +247,11 @@ export class VentasService {
     if (venta.tipoPago !== 'credito') {
       throw new BadRequestException('La venta no es de tipo crédito');
     }
-    venta.pagado = (venta.pagado ?? 0) + monto;
+    venta.pagado = ( Number(venta.pagado) ?? 0) + monto;
     venta.fechaPago = new Date();
     await this.dataSource.getRepository(Ventas).save(venta);
     return CustomUtils.responseApi('Pago registrado con éxito', { ventaId: venta.id, montoPagado: monto });
   }
+
+  
 }

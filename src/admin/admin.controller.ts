@@ -79,13 +79,14 @@ export class AdminController {
     const devoluciones = await this.camionesService.obtenerResumenDevolucionesPorChofer(choferId);
     const ventasHoy = await this.camionesService.obtenerResumenVentasPorChoferHoy(choferId);
     const fechaAsignacion = await this.camionesService.obtenerFechaUltimoDespachoPendientePorChofer(choferId);
-    
+    const gastos = await this.camionesService.obtenerGastosDetalles(choferId);
     return CustomUtils.responseApi('Resumen de despachos por chofer', {
       despachos,
       devoluciones,
       ventasHoy,
       cuentasPorCobrar,      
-      fechaUltimoDespachoPendiente: fechaAsignacion ? fechaAsignacion.fecha : null
+      fechaUltimoDespachoPendiente: fechaAsignacion ? fechaAsignacion.fecha : null, 
+      gastos
     });
   }
 

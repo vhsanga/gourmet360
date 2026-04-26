@@ -142,4 +142,15 @@ export class CamionService {
         ]);
         return result[0];
     } 
+
+    async obtenerGastosDetalles(choferId: number){
+        const sql = `
+        select  detalle, valor 
+                from gasto_despacho gd 
+                inner join despachos d on gd.id_despacho = d.id 
+                where gd.id_chofer =? and d.estado ='pendiente'
+        `;
+        const result = await this.dataSource.query(sql, [choferId]);
+        return result;
+    }
 }

@@ -10,11 +10,9 @@ export class CreateVentaDetalleDto {
   cantidad!: number;
 
   @IsNumber()
-  @IsPositive()
   precioUnitario!: number;
 
   @IsNumber()
-  @IsPositive()
   @IsOptional()
   precioCliente?: number;
 }
