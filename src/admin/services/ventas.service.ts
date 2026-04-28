@@ -99,8 +99,14 @@ export class VentasService {
   async obtenerResumenVentasPorFecha(fecha: string) {
     const fechaInicio = `${fecha} 00:00:00`;
     const sql = `
-     SELECT
-          SUM(CASE WHEN v.tipo_pago = 'contado' THEN v.total ELSE 0 END) AS total_ventas_contado,
+      SELECT
+          SUM(CASE WHEN v.tipo_pago = 'contado' THEN v.total ELSE 0 END)
+          + COALESCE((
+              SELECT SUM(pagado)
+              FROM ventas
+              WHERE DATE(fecha_pago) = ?
+                AND tipo_pago = 'credito'
+          ), 0) AS total_ventas_contado,
           SUM(CASE WHEN v.tipo_pago = 'credito' THEN v.total ELSE 0 END) AS total_ventas_credito,
           MAX(vd.cantidad_vendida) AS cantidad_vendida,
           MAX(dd.cantidad_devuelta) AS cantidad_devuelta
@@ -122,15 +128,16 @@ export class VentasService {
     `;
 
     const result = await this.dataSource.query(sql, [
-      fechaInicio,
-      fechaInicio,
-      fechaInicio,
-      fechaInicio,
-      fechaInicio,
-      fechaInicio,
+      fecha,         // DATE(fecha_pago) = ?
+      fechaInicio,   // venta_detalles created_at >=
+      fechaInicio,   // DATE_ADD venta_detalles
+      fechaInicio,   // devoluciones created_at >=
+      fechaInicio,   // DATE_ADD devoluciones
+      fechaInicio,   // v.fecha >=
+      fechaInicio,   // DATE_ADD v.fecha
     ]);
 
-    return result[0]; // viene como array
+    return result[0];
   }
 
 
