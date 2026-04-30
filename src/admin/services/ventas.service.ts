@@ -80,7 +80,7 @@ export class VentasService {
           clienteProducto.idCliente = idCliente;
           clienteProducto.productoId = item.idProducto;
           clienteProducto.precio = item.precioCliente;
-          await queryRunner.manager.save(ClienteProducto, clienteProducto);
+          await queryRunner.manager.upsert(ClienteProducto, clienteProducto, ['idCliente', 'productoId']);
         }
       }
 
