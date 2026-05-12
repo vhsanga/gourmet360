@@ -1,9 +1,10 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Clientes } from 'src/entities/entities/Clientes';
 import { ClientesChofer } from 'src/entities/entities/ClientesChofer';
 import { DataSource, Repository } from 'typeorm';
 import { CreateClienteDto } from '../dto/create-cliente.dto';
+import { UpdateClienteDto } from '../dto/update-cliente.dto';
 
 @Injectable()
 export class ClientesChoferService {
@@ -148,6 +149,16 @@ export class ClientesChoferService {
       // Es vital liberar el queryRunner para no dejar conexiones abiertas
       await queryRunner.release();
     }
+  }
+
+  async updateClienteChofer(updateClienteDto: UpdateClienteDto) {
+    const { id_cliente, ...datosActualizar } = updateClienteDto;
+    const cliente = await this.dataSource.getRepository(Clientes).findOne({ where: { id: id_cliente } });
+    if (!cliente) {
+      throw new NotFoundException(`Cliente con id ${id_cliente} no encontrado`);
+    }
+    await this.dataSource.getRepository(Clientes).update(id_cliente, datosActualizar);
+    return this.dataSource.getRepository(Clientes).findOne({ where: { id: id_cliente } });
   }
 
   async setUbicacionChofer(idChofer: number, lat: string, lng: string) {

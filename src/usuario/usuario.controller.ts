@@ -6,6 +6,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { CustomUtils } from 'src/utils/custom_utils';
 import { ClientesChoferService } from './services/cliente-chofer.service';
 import { CreateClienteDto } from './dto/create-cliente.dto';
+import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { DevolucionesService } from './services/devoluciones.services';
 import { CreateDevolucionDto } from './dto/create-devolucion.dto';
 
@@ -52,6 +53,11 @@ export class UsuarioController {
   @Post('create-cliente')
   createCliente(@Body() createClienteDto: CreateClienteDto, @Request() req: any) {
     return this.clientesChoferService.createClienteChofer(createClienteDto);
+  }
+
+  @Post('update-cliente')
+  updateCliente(@Body() updateClienteDto: UpdateClienteDto) {
+    return this.clientesChoferService.updateClienteChofer(updateClienteDto);
   }
 
 

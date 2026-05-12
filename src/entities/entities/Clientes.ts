@@ -35,6 +35,9 @@ export class Clientes {
   @Column("boolean", { name: "especial", nullable: true })
   especial?: boolean | null;  // Añadido ?
 
+  @Column("boolean", { name: "activo", nullable: false })
+  activo?: boolean | null;  // Añadido ?
+
   @Column("decimal", {
     name: "saldo_actual",
     nullable: true,

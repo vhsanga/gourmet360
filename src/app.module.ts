@@ -16,6 +16,7 @@ import { Cobros } from './entities/entities/Cobros';
 import { Rendiciones } from './entities/entities/Rendiciones';
 import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
+import { ClienteModule } from './cliente/cliente.module';
 import { Devoluciones } from './entities/entities/Devoluciones';
 import { DevolucionDetalles } from './entities/entities/DevolucionDetalles';
 import { Cambios } from './entities/entities/Cambios';
@@ -40,6 +41,7 @@ import { ClienteProducto } from './entities/entities/ClienteProductos';
     UsuarioModule,
     AuthModule,
     AdminModule,
+    ClienteModule,
   ],
 })
 export class AppModule {}

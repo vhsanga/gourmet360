@@ -6,7 +6,7 @@ import { Despachos } from 'src/entities/entities/Despachos';
 import { DespachoDetalles } from 'src/entities/entities/DespachoDetalles';
 import { CustomUtils } from 'src/utils/custom_utils';
 import { GastoDespacho } from 'src/entities/entities/GastoDespacho';
-import { GastoDetalleItemDto } from '../dtos/create-registro-gasto.dto';
+import { UpsertGastoDespachoDto } from '../dtos/create-registro-gasto.dto';
 
 @Injectable()
 export class DespachoService {
@@ -45,33 +45,26 @@ export class DespachoService {
     });
   }
 
-  async actualizarGastoDespacho(gastosDetalle: GastoDetalleItemDto[]) {
-    if(gastosDetalle.length == 0){
-      throw new Error('No hay detalles'); 
-    }
-    const despachoId = gastosDetalle[0].idDespacho;
-    var sumaGasto = 0;
-    gastosDetalle.map( (item)=>{
-      sumaGasto+= item.valor;
-    });
-    
-    const despacho = await this.despachoRepo.findOne({where: {id: despachoId}});
-    if (!despacho) {
-      throw new Error('Despacho no encontrado');
-    } 
-    despacho.gastos = sumaGasto;
-    await this.despachoRepo.save(despacho);
+  async actualizarGastoDespacho(dto: UpsertGastoDespachoDto) {
+    const { idDespacho, idChofer, gastos } = dto;
 
-    return await this.dataSource.transaction(async (manager) => {
-    const detalles = gastosDetalle.map(det => {
-        return manager.create(GastoDespacho, {
-          idDespacho: det.idDespacho,
-          idChofer: det.idChofer,
-          detalle: det.detalle,
-          valor: det.valor  
-        });
-      });
-      
+    const despacho = await this.despachoRepo.findOne({ where: { id: idDespacho } });
+    if (!despacho) throw new Error('Despacho no encontrado');
+
+    const sumaGasto = gastos.reduce((acc, item) => acc + item.valor, 0);
+    despacho.gastos = sumaGasto;
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.save(Despachos, despacho);
+      await manager.delete(GastoDespacho, { idDespacho });
+      const detalles = gastos.map(item =>
+        manager.create(GastoDespacho, {
+          idDespacho,
+          idChofer,
+          detalle: item.detalle,
+          valor: item.valor,
+        })
+      );
       await manager.save(GastoDespacho, detalles);
     });
   }

@@ -145,7 +145,7 @@ export class CamionService {
 
     async obtenerGastosDetalles(choferId: number){
         const sql = `
-        select  detalle, valor 
+        select  gd.id, detalle, valor 
                 from gasto_despacho gd 
                 inner join despachos d on gd.id_despacho = d.id 
                 where gd.id_chofer =? and d.estado ='pendiente'

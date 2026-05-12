@@ -12,7 +12,7 @@ import { CambiosService } from './services/cambios.service';
 import { CreateCambioDto } from './dtos/create-cambio.dto';
 import { CreateProductoDto } from './dtos/create-producto.dto';
 import { CategoriaServices } from './services/categoria.services';
-import { GastoDetalleItemDto } from './dtos/create-registro-gasto.dto';
+import { UpsertGastoDespachoDto } from './dtos/create-registro-gasto.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -103,8 +103,8 @@ export class AdminController {
   }
 
   @Post('update-gasto-despacho')
-  async updateGastoDespacho( @Body('gastos') gastosDetalle: GastoDetalleItemDto[]) {
-    await this.despachosService.actualizarGastoDespacho(gastosDetalle);
+  async updateGastoDespacho(@Body() dto: UpsertGastoDespachoDto) {
+    await this.despachosService.actualizarGastoDespacho(dto);
     return CustomUtils.responseApi('Gastos guardado correctamente');
   }
 
