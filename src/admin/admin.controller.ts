@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req, Request, UseGuards } from '@nestjs/common';
 import { DespachoService } from './services/despacho.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateDespachoDto } from './dtos/create-despacho.dto';
@@ -120,6 +120,12 @@ export class AdminController {
     return CustomUtils.responseApi('Producto creado exitosamente', producto);
   }
 
+  @Post('eliminar-producto')
+  async eliminarProducto(@Body('id') id: string) {
+    await this.productoService.eliminarProducto(id);
+    return CustomUtils.responseApi('Producto eliminado exitosamente');
+  }
+
   
   @Post('crear-categoria')
   async crearCategoria(@Body('nombre') nombre: string) {
@@ -143,6 +149,17 @@ export class AdminController {
   async pagarVentaCredito(@Body('ventaId')  ventaId: number, @Body('monto') monto: number) {
     const pago = await this.ventasService.pagarVentaCredito(ventaId, monto);
     return pago;
+  }
+
+  @Get('venta-productos-cliente/:idcliente/:fecha')
+  async consultaVentaProductosClienteFecha(
+    @Param('idcliente') idcliente: number,
+    @Param('fecha') fecha: string,
+  ) {
+    const ventas = await this.ventasService.consultaVentaProductosClienteFecha(idcliente, fecha);
+    const cortesias = await this.ventasService.consultaCortesiaProductosClienteFecha(idcliente, fecha);
+    const devoluciones = await this.ventasService.consultaDevolucionesProductosClienteFecha(idcliente, fecha);
+    return CustomUtils.responseApi('Productos vendidos al cliente en la fecha', { ventas, cortesias, devoluciones });
   }
 
   

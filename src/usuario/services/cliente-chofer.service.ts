@@ -103,7 +103,7 @@ export class ClientesChoferService {
           where d.estado ='pendiente' and chofer_id  = ?
           ) asignado,
           'pendiente' as estado,
-          (select sum(v.total) from ventas v inner join despachos d on v.despacho_id = d.id where  d.estado ='pendiente' and v.tipo_pago ='contado' and d.chofer_id  = ?) total_ventas
+          (select sum(v.total) from ventas v inner join despachos d on v.despacho_id = d.id where  d.estado ='pendiente'  and d.chofer_id  = ?) total_ventas
       `;
     const result =  await this.clientesChoferRepo.query(sql, [choferId, choferId, choferId, choferId]);
     return result.length ? result[0] : {};

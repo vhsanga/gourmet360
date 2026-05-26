@@ -25,6 +25,7 @@ export class ProductoServices{
             'c.id as categoria_id',
             'c.nombre as categoria_nombre',
             ])
+            .where('productos.activo = :activo', { activo: 1 })
             .orderBy('productos.id', 'ASC')
             .getRawMany();
     }
@@ -45,5 +46,9 @@ export class ProductoServices{
         producto.createdAt = new Date();
         producto.updatedAt = new Date();
         return await this.productoRepository.save(producto);
+    }
+
+    async eliminarProducto(id: string): Promise<void> {
+        await this.productoRepository.update(id, { activo: false });
     }
 }

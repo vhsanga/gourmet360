@@ -117,9 +117,9 @@ export class CamionService {
 
     async obtenerResumenVentasPorChoferHoy(choferId: number) {
         const sql = `
-         SELECT
-            COALESCE(SUM(CASE WHEN v.tipo_pago = 'credito' THEN v.total END), 0) AS ventas_credito,
-            COALESCE(SUM(CASE WHEN v.tipo_pago = 'contado' THEN v.total END), 0) AS ventas_contado
+          SELECT
+            COALESCE(SUM( v.total - v.pagado ), 0) AS ventas_credito,
+            COALESCE(SUM( v.pagado ), 0) AS ventas_contado
             FROM ventas v
             JOIN despachos d ON v.despacho_id = d.id
             WHERE d.chofer_id = ?
@@ -133,9 +133,10 @@ export class CamionService {
 
     async obtenerCuentasPorCobrarChofer(choferId: number) {
         const sql = `
-         select coalesce(sum(total), 0) cuentas_por_cobrar from  ventas v
+         select   sum(v.total - v.pagado) cuentas_por_cobrar  from ventas v 
             JOIN despachos d ON v.despacho_id = d.id
-            WHERE d.chofer_id = ? and v.tipo_pago ='credito' 
+            where  d.chofer_id = ?
+            and v.pagado < v.total
         `;
         const result = await this.dataSource.query(sql, [
         choferId

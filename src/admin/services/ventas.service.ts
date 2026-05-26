@@ -31,8 +31,10 @@ export class VentasService {
       venta.despachoId = idDespacho;
       venta.clienteId = idCliente;
       venta.fecha = new Date();
-      venta.tipoPago = dto.tipoPago;
       venta.total = dto.total;
+      venta.pagado = dto.pagado ?? 0;
+      venta.efectivo = dto.efectivo ?? 0;
+      venta.transferencia = dto.transferencia ?? 0;
       venta.createdBy = idChofer;
       const ventaGuardada = await queryRunner.manager.save(Ventas, venta);
 
@@ -100,14 +102,8 @@ export class VentasService {
     const fechaInicio = `${fecha} 00:00:00`;
     const sql = `
       SELECT
-          SUM(CASE WHEN v.tipo_pago = 'contado' THEN v.total ELSE 0 END)
-          + COALESCE((
-              SELECT SUM(pagado)
-              FROM ventas
-              WHERE DATE(fecha_pago) = ?
-                AND tipo_pago = 'credito'
-          ), 0) AS total_ventas_contado,
-          SUM(CASE WHEN v.tipo_pago = 'credito' THEN v.total ELSE 0 END) AS total_ventas_credito,
+          sum(v.pagado) total_ventas_contado,
+	        sum(v.total - v.pagado) total_ventas_credito, 
           MAX(vd.cantidad_vendida) AS cantidad_vendida,
           MAX(dd.cantidad_devuelta) AS cantidad_devuelta
       FROM ventas v
@@ -171,44 +167,34 @@ export class VentasService {
           c.telefono, 
           c.especial,
 
-          (SELECT COALESCE(SUM(
-              CASE 
-                  WHEN v.pagado IS NOT NULL THEN v.pagado
-                  ELSE v.total
-              END
-          ), 0)
-          FROM ventas v 
-          WHERE v.cliente_id = c.id 
-            AND (v.tipo_pago = 'contado' or v.pagado is not null )
+          (select COALESCE(sum(pagado),0)  FROM ventas v 
+          WHERE v.cliente_id =  c.id
             AND v.fecha >= ?
-            AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
-          ) AS venta_contado_hoy,
+            AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)) venta_contado_hoy,
 
-          (SELECT COALESCE(SUM(v.total - COALESCE(v.pagado, 0)), 0) 
-          FROM ventas v 
-          WHERE v.cliente_id = c.id 
-            AND v.tipo_pago = 'credito' 
+          (select COALESCE(sum(total - pagado),0)  FROM ventas v 
+          WHERE v.cliente_id =  c.id
             AND v.fecha >= ?
-            AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
-          ) AS deuda_acumulada,
+            AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)) deuda_acumulada,
 
-          (SELECT COALESCE(SUM(d.cantidad), 0) 
+           (SELECT COALESCE(SUM(d.cantidad), 0) 
           FROM devoluciones d  
           WHERE d.cliente_id = c.id 
-            AND d.created_at >= ?
-            AND d.created_at < DATE_ADD(?, INTERVAL 1 DAY)
+            AND d.created_at >= '2026-05-21 00:00:00'
+            AND d.created_at < DATE_ADD('2026-05-21 00:00:00', INTERVAL 1 DAY)
           ) AS devolucion_hoy,
 
           (SELECT v.id
           FROM ventas v 
           WHERE v.cliente_id = c.id 
-            AND v.tipo_pago = 'credito' 
             AND v.fecha >= ?
             AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
           LIMIT 1
           ) AS id_venta
 
-      FROM clientes c;
+      FROM clientes c
+      where c.activo = 1
+      ORDER BY c.created_at DESC;;
       `;
       const result = await this.dataSource.query(sql, [
         fechaParam,
@@ -228,9 +214,9 @@ export class VentasService {
         SELECT 
             id id_venta,
             DATE_FORMAT(fecha, '%Y-%m-%d') AS dia,
-            SUM(CASE WHEN tipo_pago = 'contado' THEN total ELSE 0 END) AS total_contado,
-            SUM(CASE WHEN tipo_pago = 'credito' THEN total ELSE 0 END) AS total_credito,
-             SUM(CASE WHEN tipo_pago = 'credito' THEN pagado  ELSE 0 END) AS total_pagado
+            SUM(pagado) AS total_contado,
+            SUM(total - pagado) AS total_credito,
+            SUM( pagado ) AS total_pagado
         FROM ventas
         WHERE cliente_id = ?
           AND fecha >= ?
@@ -246,14 +232,45 @@ export class VentasService {
       return result;
   } 
 
+  async consultaVentaProductosClienteFecha(idcliente: number, fecha: string) {
+    const sql = `
+      select p.id, p.nombre, vd.cantidad, vd.precio_unitario, vd.subtotal
+      from venta_detalles vd
+      inner join ventas v on v.id=vd.venta_id
+      inner join productos p on vd.producto_id = p.id
+      where v.cliente_id = ? and DATE(v.fecha) = ?
+    `;
+    return this.dataSource.query(sql, [idcliente, fecha]);
+  }
+
+  async consultaCortesiaProductosClienteFecha(idcliente: number, fecha: string) {
+    const sql = `
+      select p.id, p.nombre, vd.cantidad, vd.precio_unitario, vd.subtotal
+      from venta_detalles vd
+      inner join ventas v on v.id=vd.venta_id
+      inner join productos p on vd.producto_id = p.id
+      where v.cliente_id = ? and DATE(v.fecha) = ?   and total = 0
+    `;
+    return this.dataSource.query(sql, [idcliente, fecha]);
+  }
+
+  async consultaDevolucionesProductosClienteFecha(idcliente: number, fecha: string) {
+    const sql = `
+       select  p.id, p.nombre, dd.cantidad_devuelta cantidad, 0 precio_unitario, 0 subtotal
+        from devolucion_detalles dd 
+        inner join devoluciones d on d.id  =dd.devolucion_id 
+        inner join productos p on dd.producto_id = p.id
+        where d.cliente_id = ? and DATE(d.fecha_devolucion) = ?  
+      `;
+    return this.dataSource.query(sql, [idcliente, fecha]);
+  }
+
   async pagarVentaCredito(ventaId: number, monto: number) {
     const venta = await this.dataSource.getRepository(Ventas).findOneBy({ id: ventaId });
-    if (!venta) {
+    if (!venta) { 
       throw new NotFoundException('Venta no encontrada');
     }
-    if (venta.tipoPago !== 'credito') {
-      throw new BadRequestException('La venta no es de tipo crédito');
-    }
+
     venta.pagado = ( Number(venta.pagado) ?? 0) + monto;
     venta.fechaPago = new Date();
     await this.dataSource.getRepository(Ventas).save(venta);

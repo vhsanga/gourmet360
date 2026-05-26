@@ -40,14 +40,18 @@ export class Ventas {
   })
   fechaPago?: Date | null;
 
-  @Column("enum", { name: "tipo_pago", enum: ["contado", "credito"] })
-  tipoPago?: "contado" | "credito";
 
   @Column("decimal", { name: "total", precision: 10, scale: 2 })
   total?: number;
 
   @Column("decimal", { name: "pagado", precision: 10, scale: 2 })
   pagado?: number;
+
+  @Column("decimal", { name: "efectivo", precision: 10, scale: 2 })
+  efectivo?: number;
+
+  @Column("decimal", { name: "transferencia", precision: 10, scale: 2 })
+  transferencia?: number;
 
   @Column("datetime", {
     name: "created_at",

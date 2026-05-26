@@ -30,13 +30,13 @@ import { ClienteProducto } from './entities/entities/ClienteProductos';
     TypeOrmModule.forRoot({
       type: 'mysql',
       timezone: '-05:00',
-      host: '62.146.172.94',
+      host: '127.0.0.1',
       port: 3306,
       username: 'remoto',
       password: 'P@ss4930',
-      database: 'gourmet360',
+      database: 'gourmet360PRod',
       entities: [Usuarios, Clientes, ClientesChofer, Categorias, Productos, Camiones, Rutas, RutaClientes, Despachos, DespachoDetalles, Ventas, VentaDetalles, Cobros, Rendiciones, Devoluciones, DevolucionDetalles, Cambios, CambioDetalles, GastoDespacho, ClienteProducto, ],
-      //synchronize: true, // ⚠️ Solo en desarrollo
+      //synchronize: true, //  Solo en desarrollo
     }),
     UsuarioModule,
     AuthModule,

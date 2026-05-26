@@ -1,4 +1,4 @@
-import { IsNumber, IsNotEmpty, IsArray, ValidateNested, IsString } from 'class-validator';
+import { IsNumber, IsNotEmpty, IsArray, ValidateNested, IsString, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateVentaDetalleDto } from './create-venta-detalle.dto';
 
@@ -16,13 +16,29 @@ export class CreateVentaDto {
   @IsNotEmpty()
   idDespacho!: number;
 
-  @IsString()
-  @IsNotEmpty()
-  tipoPago!: "contado" | "credito";
 
   @IsNumber()
   @IsNotEmpty()
   total!: number;
+
+  @IsOptional()
+  @IsString()
+  tipoPago?: string;
+
+
+  @IsOptional()
+  @IsNumber()
+  pagado?: number;
+
+
+  @IsOptional()
+  @IsNumber()
+  efectivo?: number;
+
+
+  @IsOptional()
+  @IsNumber()
+  transferencia?: number;
 
   @IsArray()
   @ValidateNested({ each: true })
