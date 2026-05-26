@@ -34,7 +34,7 @@ import { ClienteProducto } from './entities/entities/ClienteProductos';
       port: 3306,
       username: 'remoto',
       password: 'P@ss4930',
-      database: 'gourmet360PRod',
+      database: 'gourmet360',
       entities: [Usuarios, Clientes, ClientesChofer, Categorias, Productos, Camiones, Rutas, RutaClientes, Despachos, DespachoDetalles, Ventas, VentaDetalles, Cobros, Rendiciones, Devoluciones, DevolucionDetalles, Cambios, CambioDetalles, GastoDespacho, ClienteProducto, ],
       //synchronize: true, //  Solo en desarrollo
     }),
