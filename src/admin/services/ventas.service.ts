@@ -265,6 +265,22 @@ export class VentasService {
     return this.dataSource.query(sql, [idcliente, fecha]);
   }
 
+  async ventasTotalesPorDia() {
+    const sql = `
+        SELECT
+            DATE(v.fecha) AS dia,
+            SUM(v.total) AS total_ventas,
+            SUM(COALESCE(v.pagado, 0)) AS recaudado,
+            SUM(COALESCE(v.efectivo, 0)) AS total_efectivo,
+            SUM(COALESCE(v.transferencia, 0)) AS total_transferencias,
+            SUM(v.total - COALESCE(v.pagado, 0)) AS total_deuda
+        FROM ventas v
+        GROUP BY DATE(v.fecha)
+        ORDER BY dia;
+      `;
+    return this.dataSource.query(sql);
+  }
+
   async pagarVentaCredito(ventaId: number, monto: number) {
     const venta = await this.dataSource.getRepository(Ventas).findOneBy({ id: ventaId });
     if (!venta) { 

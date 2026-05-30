@@ -162,6 +162,13 @@ export class AdminController {
     return CustomUtils.responseApi('Productos vendidos al cliente en la fecha', { ventas, cortesias, devoluciones });
   }
 
+  @Get('ventas-totales-dia')
+  async ventasTotalesPorDia() {
+    const pago = await this.ventasService.ventasTotalesPorDia();
+    return CustomUtils.responseApi('Ventas totales por día', pago );
+  
+  }
+
   
 
 }
