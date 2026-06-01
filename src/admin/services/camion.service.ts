@@ -113,7 +113,7 @@ export class CamionService {
         const result = await this.dataSource.query(sql, [
         choferId
         ]);
-        return result[0];
+        return result;
     }
 
     async obtenerResumenVentasPorChoferHoy(choferId: number) {
