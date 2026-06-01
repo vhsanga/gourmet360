@@ -36,6 +36,7 @@ export class ClientesChoferService {
       FROM clientes_chofer cc
       INNER JOIN clientes c ON c.id = cc.id_cliente
       WHERE cc.id_chofer = ?
+      and c.activo =1
       ORDER BY cc.created_at DESC;
     `;
 

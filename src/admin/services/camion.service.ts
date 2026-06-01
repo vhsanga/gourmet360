@@ -103,9 +103,10 @@ export class CamionService {
 
     async obtenerResumenDevolucionesPorChofer(choferId: number) {
         const sql = `
-        SELECT COALESCE(SUM(d.cantidad), 0) AS cantidad_devuelta
-            FROM devoluciones d
-            WHERE d.chofer_id = ?
+        select dd.cantidad_devuelta cantidad, p.nombre from devolucion_detalles dd 
+            inner join devoluciones d on d.id =dd.devolucion_id 
+            inner join productos p on dd.producto_id = p.id 
+            where d.chofer_id =?
             AND d.fecha_devolucion >= CURDATE()
             AND d.fecha_devolucion < CURDATE() + INTERVAL 1 DAY;
         `;
@@ -156,4 +157,20 @@ export class CamionService {
         const result = await this.dataSource.query(sql, [choferId]);
         return result;
     }
+
+    async obtenerCortesiasEntregadas(choferId: number){
+        const sql = `
+        select  vd.cantidad, p.nombre FROM  ventas v
+                JOIN despachos d ON v.despacho_id = d.id    
+                join venta_detalles vd on v.id = vd.venta_id 
+                join productos p on vd.producto_id = p.id
+            where v.total = 0
+            and  d.chofer_id = ?
+            and d.estado ='pendiente';
+        `;
+        const result = await this.dataSource.query(sql, [choferId]);
+        return result;
+    }
+
+   
 }
