@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Req, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, Req, Request, UseGuards } from '@nestjs/common';
 import { DespachoService } from './services/despacho.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateDespachoDto } from './dtos/create-despacho.dto';
@@ -99,8 +99,12 @@ export class AdminController {
   }
 
   @Get('resumen-ventas-clientes/:fecha')
-  async getResumenVentasPorClientes(@Param('fecha') fecha: string) {
-    const data = await this.ventasService.resumenVentasClintes(fecha);
+  async getResumenVentasPorClientes(
+    @Param('fecha') fecha: string,
+    @Query('rol') rol: string,
+    @Query('idchofer') idchofer: string,
+  ) {
+    const data = await this.ventasService.resumenVentasClintes(fecha, rol, idchofer);
     return CustomUtils.responseApi('Resumen de ventas por clientes', data);
   }
 

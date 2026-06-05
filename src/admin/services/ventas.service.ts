@@ -156,58 +156,58 @@ export class VentasService {
     return result[0];
   }
 
-  async resumenVentasClintes(fecha?: string) {
+  async resumenVentasClintes(fecha: string, rol: string, idchofer: string) {
       const fechaParam = fecha || new Date().toISOString().split('T')[0];
+      const condicionChofer = rol != 'admin' ? ' and cc.id_chofer =? ' : ' ';
       const sql = `
-      SELECT 
-          c.id,  
-          c.nombre, 
-          c.contacto, 
-          c.direccion, 
-          c.telefono, 
+      SELECT
+          c.id,
+          c.nombre,
+          c.contacto,
+          c.direccion,
+          c.telefono,
           c.especial,
 
-          (select COALESCE(sum(pagado),0)  FROM ventas v 
+          (select COALESCE(sum(pagado),0)  FROM ventas v
           WHERE v.cliente_id =  c.id
             AND v.fecha >= ?
             AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)) venta_contado_hoy,
 
-          (select COALESCE(sum(total - pagado),0)  FROM ventas v 
+          (select COALESCE(sum(total - pagado),0)  FROM ventas v
           WHERE v.cliente_id =  c.id
             AND v.fecha >= ?
             AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)) deuda_acumulada,
 
-           (SELECT COALESCE(SUM(d.cantidad), 0) 
-          FROM devoluciones d  
-          WHERE d.cliente_id = c.id 
+           (SELECT COALESCE(SUM(d.cantidad), 0)
+          FROM devoluciones d
+          WHERE d.cliente_id = c.id
             AND d.created_at >= '2026-05-21 00:00:00'
             AND d.created_at < DATE_ADD('2026-05-21 00:00:00', INTERVAL 1 DAY)
           ) AS devolucion_hoy,
 
           (SELECT v.id
-          FROM ventas v 
-          WHERE v.cliente_id = c.id 
+          FROM ventas v
+          WHERE v.cliente_id = c.id
             AND v.fecha >= ?
             AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
           LIMIT 1
           ) AS id_venta
 
       FROM clientes c
+      inner join clientes_chofer cc  on c.id = cc.id_cliente
       where c.activo = 1
-      ORDER BY c.created_at DESC;;
+       ${condicionChofer}
+      ORDER BY c.created_at DESC;
       `;
-      const result = await this.dataSource.query(sql, [
-        fechaParam,
-        fechaParam,
-        fechaParam,
-        fechaParam,
-        fechaParam,
-        fechaParam,
-        fechaParam,
-        fechaParam,
-      ]);
-      return result;
-  } 
+      const params: any[] = [
+        fechaParam, fechaParam,  // venta_contado_hoy
+        fechaParam, fechaParam,  // deuda_acumulada
+        fechaParam, fechaParam,  // id_venta
+      ];
+      if (rol != 'admin') params.push(idchofer);
+
+      return this.dataSource.query(sql, params);
+  }
 
   async ventasClienteRangoFecha(clienteId: number, fechaInicio: string, fechaFin: string) {
       const sql = `

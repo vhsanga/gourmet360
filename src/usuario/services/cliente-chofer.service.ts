@@ -32,10 +32,11 @@ export class ClientesChoferService {
           FROM ventas v 
           WHERE v.cliente_id = cc.id_cliente 
             AND v.despacho_id = ?
-        ) AS entregado
+        ) AS entregado,
+         cc.id_chofer idChofer,
+         ( select  COUNT( DISTINCT Date(fecha))   from ventas v where  v.pagado < total and v.cliente_id =c.id ) diasDeuda 
       FROM clientes_chofer cc
       INNER JOIN clientes c ON c.id = cc.id_cliente
-      WHERE cc.id_chofer = ?
       and c.activo =1
       ORDER BY cc.created_at DESC;
     `;
