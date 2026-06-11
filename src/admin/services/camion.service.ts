@@ -120,7 +120,25 @@ export class CamionService {
         const sql = `
           SELECT
             COALESCE(SUM( v.total - v.pagado ), 0) AS ventas_credito,
-            COALESCE(SUM( v.pagado ), 0) AS ventas_contado,
+            COALESCE(
+		        SUM(
+		            CASE
+		                WHEN v.fecha_pago IS NULL AND v.pagado > 0
+		                THEN v.pagado
+		                ELSE 0
+		            END
+		        ), 0
+		    ) AS ventas_contado,
+		     COALESCE(
+                SUM(
+                    CASE
+                        WHEN DATE(v.fecha_pago) < CURDATE()
+                            AND v.cobro_chofer_id = 15
+                        THEN v.pagado
+                        ELSE 0
+                    END
+                ), 0
+            ) AS cobrado,
             COALESCE(SUM( v.efectivo ), 0) AS efectivo,
             COALESCE(SUM( v.transferencia ), 0) AS transferencia
             FROM ventas v

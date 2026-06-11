@@ -152,8 +152,8 @@ export class AdminController {
   }
 
   @Post('pagar-venta-credito')
-  async pagarVentaCredito(@Body('ventaId')  ventaId: number, @Body('monto') monto: number) {
-    const pago = await this.ventasService.pagarVentaCredito(ventaId, monto);
+  async pagarVentaCredito(@Body('ventaId')  ventaId: number, @Body('monto') monto: number, @Body('choferId') choferId: number) {
+    const pago = await this.ventasService.pagarVentaCredito(ventaId, monto, choferId);
     return pago;
   }
 

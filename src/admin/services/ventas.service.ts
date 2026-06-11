@@ -281,7 +281,7 @@ export class VentasService {
     return this.dataSource.query(sql);
   }
 
-  async pagarVentaCredito(ventaId: number, monto: number) {
+  async pagarVentaCredito(ventaId: number, monto: number, choferId: number) {
     const venta = await this.dataSource.getRepository(Ventas).findOneBy({ id: ventaId });
     if (!venta) { 
       throw new NotFoundException('Venta no encontrada');
@@ -289,6 +289,7 @@ export class VentasService {
 
     venta.pagado = ( Number(venta.pagado) ?? 0) + monto;
     venta.fechaPago = new Date();
+    venta.cobroChoferId = choferId;
     await this.dataSource.getRepository(Ventas).save(venta);
     return CustomUtils.responseApi('Pago registrado con éxito', { ventaId: venta.id, montoPagado: monto });
   }
