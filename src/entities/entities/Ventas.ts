@@ -11,6 +11,7 @@ import { VentaDetalles } from "./VentaDetalles";
 import { Clientes } from "./Clientes";
 import { Usuarios } from "./Usuarios";
 import { Despachos } from "./Despachos";
+import { Deuda } from "./Deuda";
 
 @Index("fk_ventas_cliente", ["clienteId"], {})
 @Index("fk_ventas_created_by", ["createdBy"], {})
@@ -77,6 +78,9 @@ export class Ventas {
 
   @OneToMany(() => VentaDetalles, (ventaDetalles) => ventaDetalles.venta)
   ventaDetalles?: VentaDetalles[];
+
+  @OneToMany(() => Deuda, (deuda) => deuda.venta)
+  deudas?: Deuda[];
 
   @ManyToOne(() => Clientes, (clientes) => clientes.ventas, {
     onDelete: "NO ACTION",

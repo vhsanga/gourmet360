@@ -12,6 +12,7 @@ import { Cobros } from "./Cobros";
 import { Devoluciones } from "./Devoluciones";
 import { RutaClientes } from "./RutaClientes";
 import { Ventas } from "./Ventas";
+import { Deuda } from "./Deuda";
 
 @Index("fk_clientes_created_by", ["createdBy"], {})
 @Index("fk_clientes_updated_by", ["updatedBy"], {})
@@ -105,4 +106,7 @@ export class Clientes {
 
   @OneToMany(() => Ventas, (ventas) => ventas.cliente)
   ventas?: Ventas[];  // Añadido ?
+
+  @OneToMany(() => Deuda, (deuda) => deuda.cliente)
+  deudas?: Deuda[];
 }

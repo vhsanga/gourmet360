@@ -12,6 +12,8 @@ import { Repository, DataSource } from 'typeorm';
 import { CreateVentaDto } from '../dtos/create-venta.dto';
 import { CustomUtils } from 'src/utils/custom_utils';
 import { ClienteProducto } from 'src/entities/entities/ClienteProductos';
+import { Deuda } from 'src/entities/entities/Deuda';
+import { CobroDeuda } from 'src/entities/entities/CobroDeuda';
 
 @Injectable()
 export class VentasService {
@@ -86,6 +88,24 @@ export class VentasService {
         }
       }
 
+      const saldoPendiente = Number(dto.total) - Number(dto.pagado ?? 0);
+
+      if (saldoPendiente > 0) { // guardar una deuda si el cliente no pagó todo
+          const deuda = new Deuda();
+          deuda.ventaId = ventaGuardada.id;
+          deuda.clienteId = idCliente;
+          deuda.valorTotal = dto.total;
+          deuda.valorCobrado = dto.pagado ?? 0;
+          deuda.pagoInicial = dto.pagado ?? 0;
+          deuda.saldoPendiente = saldoPendiente;
+          deuda.estado =
+              dto.pagado > 0
+                  ? 'PARCIAL'
+                  : 'PENDIENTE';
+          deuda.createdBy = idChofer;
+          await queryRunner.manager.save(Deuda, deuda);
+      }
+
       // 5️⃣ Confirmar transacción
       await queryRunner.commitTransaction();
       return CustomUtils.responseApi('Venta registrada con éxito', {ventaId: ventaGuardada.id});
@@ -100,41 +120,53 @@ export class VentasService {
 
   async obtenerResumenVentasPorFecha(fecha: string) {
     const fechaInicio = `${fecha} 00:00:00`;
+
     const sql = `
       SELECT
-          sum(v.pagado) total_ventas_contado,
-	        sum(v.total - v.pagado) total_ventas_credito, 
+          COALESCE(
+              SUM(
+                  CASE
+                      WHEN d.id IS NULL
+                      THEN v.total
+                      ELSE d.pago_inicial 
+                  END
+              ),
+          0) AS total_ventas_contado,
+          COALESCE(SUM(d.saldo_pendiente), 0) AS total_ventas_credito,
           MAX(vd.cantidad_vendida) AS cantidad_vendida,
           MAX(dd.cantidad_devuelta) AS cantidad_devuelta
       FROM ventas v
-      LEFT JOIN (
-          SELECT SUM(cantidad) AS cantidad_vendida
-          FROM venta_detalles
-          WHERE created_at >= ?
-            AND created_at < DATE_ADD(?, INTERVAL 1 DAY)
-      ) vd ON 1=1
-      LEFT JOIN (
-          SELECT COALESCE(SUM(cantidad),0) AS cantidad_devuelta
-          FROM devoluciones
-          WHERE created_at >= ?
-            AND created_at < DATE_ADD(?, INTERVAL 1 DAY)
-      ) dd ON 1=1
-      WHERE v.fecha >= ?
-        AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY);
-    `;
+        LEFT JOIN deuda d
+            ON d.id_venta = v.id
+        LEFT JOIN (
+            SELECT
+                SUM(cantidad) AS cantidad_vendida
+            FROM venta_detalles
+            WHERE created_at >= ?
+              AND created_at < DATE_ADD(?, INTERVAL 1 DAY)
+        ) vd ON 1 = 1
+        LEFT JOIN (
+            SELECT
+                COALESCE(SUM(cantidad),0) AS cantidad_devuelta
+            FROM devoluciones
+            WHERE created_at >= ?
+              AND created_at < DATE_ADD(?, INTERVAL 1 DAY)
+        ) dd ON 1 = 1
+        WHERE v.fecha >= ?
+          AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY);
+      `;
 
-    const result = await this.dataSource.query(sql, [
-      fecha,         // DATE(fecha_pago) = ?
-      fechaInicio,   // venta_detalles created_at >=
-      fechaInicio,   // DATE_ADD venta_detalles
-      fechaInicio,   // devoluciones created_at >=
-      fechaInicio,   // DATE_ADD devoluciones
-      fechaInicio,   // v.fecha >=
-      fechaInicio,   // DATE_ADD v.fecha
-    ]);
+      const result = await this.dataSource.query(sql, [
+        fechaInicio,
+        fechaInicio,
+        fechaInicio,
+        fechaInicio,
+        fechaInicio,
+        fechaInicio,
+      ]);
 
-    return result[0];
-  }
+      return result[0];
+    }
 
 
   async obtenerResumenDespachosPorFecha(fecha: string) {
@@ -157,9 +189,10 @@ export class VentasService {
   }
 
   async resumenVentasClintes(fecha: string, rol: string, idchofer: string) {
-      const fechaParam = fecha || new Date().toISOString().split('T')[0];
-      const condicionChofer = rol != 'admin' ? ' and cc.id_chofer =? ' : ' ';
-      const sql = `
+    const fechaParam = fecha || new Date().toISOString().split('T')[0];
+    const condicionChofer = rol != 'admin' ? ' and cc.id_chofer = ? ' : '';
+
+    const sql = `
       SELECT
           c.id,
           c.nombre,
@@ -168,61 +201,106 @@ export class VentasService {
           c.telefono,
           c.especial,
 
-          (select COALESCE(sum(pagado),0)  FROM ventas v
-          WHERE v.cliente_id =  c.id
-            AND v.fecha >= ?
-            AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)) venta_contado_hoy,
+          (
+              SELECT COALESCE(
+                  SUM(
+                      CASE
+                          WHEN d.id IS NULL
+                          THEN v.total
+                          ELSE d.pago_inicial
+                      END
+                  ),0)
+              FROM ventas v
+              LEFT JOIN deuda d
+                  ON d.idVenta = v.id
+              WHERE v.cliente_id = c.id
+                AND v.fecha >= ?
+                AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
+          ) AS venta_contado_hoy,
 
-          (select COALESCE(sum(total - pagado),0)  FROM ventas v
-          WHERE v.cliente_id =  c.id
-            AND v.fecha >= ?
-            AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)) deuda_acumulada,
+          (
+              SELECT COALESCE(SUM(d.saldo_pendiente),0)
+              FROM deuda d
+              INNER JOIN ventas v
+                  ON v.id = d.id_venta
+              WHERE v.cliente_id = c.id
+                AND v.fecha >= ?
+                AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
+          ) AS deuda_acumulada,
 
-           (SELECT COALESCE(SUM(d.cantidad), 0)
-          FROM devoluciones d
-          WHERE d.cliente_id = c.id
-            AND d.created_at >= '2026-05-21 00:00:00'
-            AND d.created_at < DATE_ADD('2026-05-21 00:00:00', INTERVAL 1 DAY)
+          (
+              SELECT COALESCE(SUM(dev.cantidad),0)
+              FROM devoluciones dev
+              WHERE dev.cliente_id = c.id
+                AND dev.created_at >= ?
+                AND dev.created_at < DATE_ADD(?, INTERVAL 1 DAY)
           ) AS devolucion_hoy,
 
-          (SELECT v.id
-          FROM ventas v
-          WHERE v.cliente_id = c.id
-            AND v.fecha >= ?
-            AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
-          LIMIT 1
+          (
+              SELECT v.id
+              FROM ventas v
+              WHERE v.cliente_id = c.id
+                AND v.fecha >= ?
+                AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
+              LIMIT 1
           ) AS id_venta
 
       FROM clientes c
-      inner join clientes_chofer cc  on c.id = cc.id_cliente
-      where c.activo = 1
-       ${condicionChofer}
-      ORDER BY c.created_at DESC;
-      `;
-      const params: any[] = [
-        fechaParam, fechaParam,  // venta_contado_hoy
-        fechaParam, fechaParam,  // deuda_acumulada
-        fechaParam, fechaParam,  // id_venta
-      ];
-      if (rol != 'admin') params.push(idchofer);
+      INNER JOIN clientes_chofer cc
+          ON c.id = cc.id_cliente
 
-      return this.dataSource.query(sql, params);
+      WHERE c.activo = 1
+        ${condicionChofer}
+
+      ORDER BY c.created_at DESC;
+    `;
+
+    const params: any[] = [
+      // venta_contado_hoy
+      fechaParam,
+      fechaParam,
+
+      // deuda_acumulada
+      fechaParam,
+      fechaParam,
+
+      // devolucion_hoy
+      fechaParam,
+      fechaParam,
+
+      // id_venta
+      fechaParam,
+      fechaParam,
+    ];
+
+    if (rol !== 'admin') {
+      params.push(idchofer);
+    }
+    return this.dataSource.query(sql, params);
   }
 
   async ventasClienteRangoFecha(clienteId: number, fechaInicio: string, fechaFin: string) {
       const sql = `
-        SELECT 
-            id id_venta,
-            DATE_FORMAT(fecha, '%Y-%m-%d') AS dia,
-            SUM(pagado) AS total_contado,
-            SUM(total - pagado) AS total_credito,
-            SUM( pagado ) AS total_pagado
-        FROM ventas
-        WHERE cliente_id = ?
-          AND fecha >= ?
-          AND fecha < ?
-        GROUP BY id, dia
-        ORDER BY dia ASC;
+        SELECT
+            v.id AS id_venta,
+            DATE_FORMAT(v.fecha, '%Y-%m-%d') AS dia,
+            v.pagado AS total_contado,
+            IFNULL(d.saldo_pendiente, 0) AS total_credito,
+            v.pagado + IFNULL(SUM(cd.valorCobrado), 0) AS total_pagado
+        FROM ventas v
+        LEFT JOIN deuda d
+            ON d.id_venta = v.id
+        LEFT JOIN cobro_deuda cd
+            ON cd.id_deuda = d.id
+        WHERE v.cliente_id = ?
+          AND v.fecha BETWEEN ? AND ?
+        GROUP BY
+            v.id,
+            v.fecha,
+            v.pagado,
+            d.saldo_pendiente
+        ORDER BY
+            v.fecha ASC;
       `;
       const result = await this.dataSource.query(sql, [
         clienteId,
@@ -270,28 +348,108 @@ export class VentasService {
         SELECT
             DATE(v.fecha) AS dia,
             SUM(v.total) AS total_ventas,
-            SUM(COALESCE(v.pagado, 0)) AS recaudado,
+            SUM(
+                CASE
+                    WHEN d.id IS NULL
+                    THEN v.total
+                    ELSE d.pago_inicial
+                END
+            ) AS recaudado,
             SUM(COALESCE(v.efectivo, 0)) AS total_efectivo,
             SUM(COALESCE(v.transferencia, 0)) AS total_transferencias,
-            SUM(v.total - COALESCE(v.pagado, 0)) AS total_deuda
+            SUM(
+                CASE
+                    WHEN d.id IS NULL
+                    THEN 0
+                    ELSE (d.valor_total - d.pago_inicial)
+                END
+            ) AS total_deuda
         FROM ventas v
+        LEFT JOIN deuda d
+            ON d.id_venta = v.id
         GROUP BY DATE(v.fecha)
         ORDER BY dia;
-      `;
+    `;
     return this.dataSource.query(sql);
   }
 
-  async pagarVentaCredito(ventaId: number, monto: number, choferId: number) {
-    const venta = await this.dataSource.getRepository(Ventas).findOneBy({ id: ventaId });
-    if (!venta) { 
-      throw new NotFoundException('Venta no encontrada');
-    }
+  async pagarVentaCredito(
+    ventaId: number,
+    monto: number,
+    choferId: number,
+    tipoPago: string
+  ) {
 
-    venta.pagado = ( Number(venta.pagado) ?? 0) + monto;
-    venta.fechaPago = new Date();
-    venta.cobroChoferId = choferId;
-    await this.dataSource.getRepository(Ventas).save(venta);
-    return CustomUtils.responseApi('Pago registrado con éxito', { ventaId: venta.id, montoPagado: monto });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const venta = await queryRunner.manager.findOne(Ventas, {
+        where: { id: ventaId },
+      });
+
+      if (!venta) {
+        throw new NotFoundException('Venta no encontrada');
+      }
+
+      const deuda = await queryRunner.manager.findOne(Deuda, {
+        where: { ventaId: ventaId },
+      });
+
+      if (!deuda) {
+        throw new NotFoundException('La venta no tiene una deuda registrada.');
+      }
+
+      if (deuda.estado === 'PAGADA') {
+        throw new BadRequestException('La deuda ya fue cancelada.');
+      }
+
+      if (monto <= 0) {
+        throw new BadRequestException('El monto debe ser mayor a cero.');
+      }
+
+      if (monto > Number(deuda.saldoPendiente)) {
+        throw new BadRequestException(
+          `El monto supera el saldo pendiente (${deuda.saldoPendiente}).`,
+        );
+      }
+
+      // Registrar el cobro
+      const cobro = new CobroDeuda();
+      cobro.idDeuda = deuda.id;
+      cobro.valorCobrado = monto;
+      cobro.idChofer = choferId;
+      cobro.tipoPago = tipoPago; // o recibirlo como parámetro
+      cobro.fechaCobro = new Date();
+      await queryRunner.manager.save(CobroDeuda, cobro);
+
+      // Actualizar deuda
+      deuda.valorCobrado = Number(deuda.valorCobrado) + Number(monto);
+      deuda.saldoPendiente = Number(deuda.valorTotal) - Number(deuda.valorCobrado);
+      deuda.fechaUltimoCobro = new Date();
+      deuda.estado = deuda.saldoPendiente <= 0? 'PAGADA' : 'PARCIAL';
+      await queryRunner.manager.save(Deuda, deuda);
+
+      await queryRunner.commitTransaction();
+
+      return CustomUtils.responseApi(
+        'Pago registrado con éxito',
+        {
+          ventaId: venta.id,
+          deudaId: deuda.id,
+          montoPagado: monto,
+          saldoPendiente: deuda.saldoPendiente,
+          estado: deuda.estado,
+        },
+      );
+
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release()
+    }
   }
 
   

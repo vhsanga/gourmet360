@@ -28,7 +28,7 @@ export class CreateVentaDto {
 
   @IsOptional()
   @IsNumber()
-  pagado?: number;
+  pagado!: number;
 
 
   @IsOptional()

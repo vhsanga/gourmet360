@@ -12,10 +12,12 @@ import { Cambios } from "./Cambios";
 import { Camiones } from "./Camiones";
 import { Clientes } from "./Clientes";
 import { Cobros } from "./Cobros";
+import { CobroDeuda } from "./CobroDeuda";
 import { DespachoDetalles } from "./DespachoDetalles";
 import { Despachos } from "./Despachos";
 import { DevolucionDetalles } from "./DevolucionDetalles";
 import { Devoluciones } from "./Devoluciones";
+import { Deuda } from "./Deuda";
 import { GastoDespacho } from "./GastoDespacho";
 import { Productos } from "./Productos";
 import { Rendiciones } from "./Rendiciones";
@@ -113,6 +115,15 @@ export class Usuarios {
   @OneToMany(() => Cobros, (cobros) => cobros.updatedBy2)
   cobros2?: Cobros[];
 
+  @OneToMany(() => CobroDeuda, (cobroDeuda) => cobroDeuda.chofer)
+  cobroDeudas?: CobroDeuda[];
+
+  @OneToMany(() => CobroDeuda, (cobroDeuda) => cobroDeuda.createdBy2)
+  cobroDeudas2?: CobroDeuda[];
+
+  @OneToMany(() => CobroDeuda, (cobroDeuda) => cobroDeuda.updatedBy2)
+  cobroDeudas3?: CobroDeuda[];
+
   @OneToMany(
     () => DespachoDetalles,
     (despachoDetalles) => despachoDetalles.createdBy2
@@ -154,6 +165,12 @@ export class Usuarios {
 
   @OneToMany(() => Devoluciones, (devoluciones) => devoluciones.updatedBy2)
   devoluciones3?: Devoluciones[];
+
+  @OneToMany(() => Deuda, (deuda) => deuda.createdBy2)
+  deudas?: Deuda[];
+
+  @OneToMany(() => Deuda, (deuda) => deuda.updatedBy2)
+  deudas2?: Deuda[];
 
   @OneToMany(() => Productos, (productos) => productos.createdBy2)
   productos?: Productos[];

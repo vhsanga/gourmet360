@@ -118,39 +118,26 @@ export class CamionService {
 
     async obtenerResumenVentasPorChoferHoy(choferId: number) {
         const sql = `
-          SELECT
-            COALESCE(SUM( v.total - v.pagado ), 0) AS ventas_credito,
-            COALESCE(
-		        SUM(
-		            CASE
-		                WHEN v.fecha_pago IS NULL AND v.pagado > 0
-		                THEN v.pagado
-		                ELSE 0
-		            END
-		        ), 0
-		    ) AS ventas_contado,
-		     COALESCE(
-                SUM(
-                    CASE
-                        WHEN DATE(v.fecha_pago) < CURDATE()
-                            AND v.cobro_chofer_id = 15
-                        THEN v.pagado
-                        ELSE 0
-                    END
-                ), 0
-            ) AS cobrado,
-            COALESCE(SUM( v.efectivo ), 0) AS efectivo,
-            COALESCE(SUM( v.transferencia ), 0) AS transferencia
+            SELECT
+            COALESCE(SUM(d.saldo_pendiente), 0) AS ventas_credito,
+            COALESCE(SUM(v.efectivo + v.transferencia), 0) AS ventas_contado,
+            COALESCE(SUM(cd.valorCobrado), 0) AS cobrado,
+            COALESCE(SUM(v.efectivo), 0) AS efectivo,
+            COALESCE(SUM(v.transferencia), 0) AS transferencia
             FROM ventas v
-            JOIN despachos d ON v.despacho_id = d.id
-            WHERE d.chofer_id = ?
-            and d.estado ='pendiente';
+            JOIN despachos dp
+            ON dp.id = v.despacho_id
+            LEFT JOIN deuda d
+            ON d.idVenta = v.id
+            LEFT JOIN cobro_deuda cd
+            ON cd.idDeuda = d.idDeuda
+            AND cd.idChofer = ?
+            WHERE dp.chofer_id = ?
+            AND dp.estado = 'pendiente';
         `;
-        const result = await this.dataSource.query(sql, [
-        choferId
-        ]);
+        const result = await this.dataSource.query(sql, [  choferId,  choferId, ]);
         return result[0];
-    }   
+    } 
 
     async obtenerCuentasPorCobrarChofer(choferId: number) {
         const sql = `
