@@ -15,35 +15,51 @@ export class ClientesChoferService {
   ) {}
 
   async listarClientesPorChofer(idChofer: number, idDespacho: number) {
-    const sql = `
-      SELECT 
-        cc.id_cliente AS idCliente,
-        c.nombre AS nombreCliente,
-        c.direccion AS direccionCliente,
-        c.telefono AS telefonoCliente,
-        c.lat,
-        c.lng,
-        c.especial,
-        cc.observacion,
-        cc.created_at AS createdAt,
-        cc.updated_at AS updatedAt,
-        (
-          SELECT COUNT(id) 
-          FROM ventas v 
-          WHERE v.cliente_id = cc.id_cliente 
-            AND v.despacho_id = ?
-        ) AS entregado,
-         cc.id_chofer idChofer,
-         ( select  COUNT( DISTINCT Date(fecha))   from ventas v where  v.pagado < total and v.cliente_id =c.id ) diasDeuda 
-      FROM clientes_chofer cc
-      INNER JOIN clientes c ON c.id = cc.id_cliente
-      and c.activo =1
-      ORDER BY cc.created_at DESC;
-    `;
+      const sql = `
+        SELECT 
+          cc.id_cliente AS idCliente,
+          c.nombre AS nombreCliente,
+          c.direccion AS direccionCliente,
+          c.telefono AS telefonoCliente,
+          c.lat,
+          c.lng,
+          c.especial,
+          cc.observacion,
+          cc.created_at AS createdAt,
+          cc.updated_at AS updatedAt,
 
-    return await this.clientesChoferRepo.query(sql, [
-      idDespacho,idChofer
-    ]);
+          (
+            SELECT COUNT(v.id)
+            FROM ventas v
+            WHERE v.cliente_id = cc.id_cliente
+              AND v.despacho_id = ?
+          ) AS entregado,
+
+          cc.id_chofer AS idChofer,
+
+          (
+            SELECT COUNT(DISTINCT DATE(v.fecha))
+            FROM deuda d
+            INNER JOIN ventas v
+              ON v.id = d.idVenta
+            WHERE v.cliente_id = c.id
+          ) AS diasDeuda
+
+        FROM clientes_chofer cc
+
+        INNER JOIN clientes c
+          ON c.id = cc.id_cliente
+        AND c.activo = 1
+
+        WHERE cc.id_chofer = ?
+
+        ORDER BY cc.created_at DESC;
+      `;
+
+      return await this.clientesChoferRepo.query(sql, [
+        idDespacho,
+        idChofer,
+      ]);
   }
 
   async listarAllClientesPorChofer(idChofer: number) {

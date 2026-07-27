@@ -141,16 +141,20 @@ export class CamionService {
 
     async obtenerCuentasPorCobrarChofer(choferId: number) {
         const sql = `
-         select   sum(v.total - v.pagado) cuentas_por_cobrar  from ventas v 
-            JOIN despachos d ON v.despacho_id = d.id
-            where  d.chofer_id = ?
-            and v.pagado < v.total
+            SELECT
+            COALESCE(SUM(d.saldoPendiente), 0) AS cuentas_por_cobrar
+            FROM deuda d
+            INNER JOIN ventas v
+            ON v.id = d.idVenta
+            INNER JOIN despachos dp
+            ON dp.id = v.despacho_id
+            WHERE dp.chofer_id = ?
+            AND d.saldoPendiente > 0;
         `;
-        const result = await this.dataSource.query(sql, [
-        choferId
-        ]);
+
+        const result = await this.dataSource.query(sql, [choferId]);
         return result[0];
-    } 
+    }
 
     async obtenerGastosDetalles(choferId: number){
         const sql = `

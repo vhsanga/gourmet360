@@ -279,36 +279,41 @@ export class VentasService {
     return this.dataSource.query(sql, params);
   }
 
-  async ventasClienteRangoFecha(clienteId: number, fechaInicio: string, fechaFin: string) {
+  async ventasClienteRangoFecha(  clienteId: number, fechaInicio: string, fechaFin: string ) {
       const sql = `
         SELECT
             v.id AS id_venta,
             DATE_FORMAT(v.fecha, '%Y-%m-%d') AS dia,
-            v.pagado AS total_contado,
-            IFNULL(d.saldo_pendiente, 0) AS total_credito,
-            v.pagado + IFNULL(SUM(cd.valorCobrado), 0) AS total_pagado
+            CASE
+                WHEN d.idDeuda IS NULL
+                    THEN v.total
+                ELSE d.pagoInicial
+            END AS total_contado,
+            CASE
+                WHEN d.idDeuda IS NULL
+                    THEN 0
+                ELSE (d.valorTotal - d.pagoInicial)
+            END AS total_credito,
+            CASE
+                WHEN d.idDeuda IS NULL
+                    THEN v.total
+                ELSE d.valorCobrado
+            END AS total_pagado
         FROM ventas v
         LEFT JOIN deuda d
-            ON d.id_venta = v.id
-        LEFT JOIN cobro_deuda cd
-            ON cd.id_deuda = d.id
+            ON d.idVenta = v.id
         WHERE v.cliente_id = ?
-          AND v.fecha BETWEEN ? AND ?
-        GROUP BY
-            v.id,
-            v.fecha,
-            v.pagado,
-            d.saldo_pendiente
-        ORDER BY
-            v.fecha ASC;
+          AND v.fecha >= ?
+          AND v.fecha <= ?
+        ORDER BY v.fecha ASC;
       `;
-      const result = await this.dataSource.query(sql, [
+
+      return await this.dataSource.query(sql, [
         clienteId,
         `${fechaInicio} 00:00:00`,
         `${fechaFin} 23:59:59`,
       ]);
-      return result;
-  } 
+    }
 
   async consultaVentaProductosClienteFecha(idcliente: number, fecha: string) {
     const sql = `
