@@ -212,20 +212,19 @@ export class VentasService {
                   ),0)
               FROM ventas v
               LEFT JOIN deuda d
-                  ON d.idVenta = v.id
+                  ON d.id_venta = v.id
               WHERE v.cliente_id = c.id
                 AND v.fecha >= ?
                 AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
           ) AS venta_contado_hoy,
 
           (
-              SELECT COALESCE(SUM(d.saldo_pendiente),0)
-              FROM deuda d
+            SELECT COALESCE(SUM(d.saldo_pendiente), 0)
+            FROM deuda d
               INNER JOIN ventas v
                   ON v.id = d.id_venta
               WHERE v.cliente_id = c.id
-                AND v.fecha >= ?
-                AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
+                AND d.saldo_pendiente > 0
           ) AS deuda_acumulada,
 
           (
@@ -260,10 +259,6 @@ export class VentasService {
       fechaParam,
       fechaParam,
 
-      // deuda_acumulada
-      fechaParam,
-      fechaParam,
-
       // devolucion_hoy
       fechaParam,
       fechaParam,
@@ -271,6 +266,7 @@ export class VentasService {
       // id_venta
       fechaParam,
       fechaParam,
+
     ];
 
     if (rol !== 'admin') {
@@ -285,23 +281,23 @@ export class VentasService {
             v.id AS id_venta,
             DATE_FORMAT(v.fecha, '%Y-%m-%d') AS dia,
             CASE
-                WHEN d.idDeuda IS NULL
+                WHEN d.id IS NULL
                     THEN v.total
-                ELSE d.pagoInicial
+                ELSE d.pago_inicial
             END AS total_contado,
             CASE
-                WHEN d.idDeuda IS NULL
+                WHEN d.id IS NULL
                     THEN 0
-                ELSE (d.valorTotal - d.pagoInicial)
+                ELSE (d.valor_total - d.pago_inicial)
             END AS total_credito,
             CASE
-                WHEN d.idDeuda IS NULL
+                WHEN d.id IS NULL
                     THEN v.total
-                ELSE d.valorCobrado
+                ELSE d.valor_cobrado
             END AS total_pagado
         FROM ventas v
         LEFT JOIN deuda d
-            ON d.idVenta = v.id
+            ON d.id_venta = v.id
         WHERE v.cliente_id = ?
           AND v.fecha >= ?
           AND v.fecha <= ?

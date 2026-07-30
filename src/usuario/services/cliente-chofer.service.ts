@@ -41,8 +41,8 @@ export class ClientesChoferService {
             SELECT COUNT(DISTINCT DATE(v.fecha))
             FROM deuda d
             INNER JOIN ventas v
-              ON v.id = d.idVenta
-            WHERE v.cliente_id = c.id
+              ON v.id = d.id_venta
+            WHERE d.saldo_pendiente>0 and v.cliente_id = c.id
           ) AS diasDeuda
 
         FROM clientes_chofer cc

@@ -121,35 +121,90 @@ export class CamionService {
             SELECT
             COALESCE(SUM(d.saldo_pendiente), 0) AS ventas_credito,
             COALESCE(SUM(v.efectivo + v.transferencia), 0) AS ventas_contado,
-            COALESCE(SUM(cd.valorCobrado), 0) AS cobrado,
+             (select cd.valor_cobrado from  cobro_deuda cd
+				 where cd.fecha_cobro >= CURDATE()
+				   AND cd.fecha_cobro < CURDATE() + INTERVAL 1 DAY          
+				   AND cd.id_chofer = ?) AS cobrado,
             COALESCE(SUM(v.efectivo), 0) AS efectivo,
             COALESCE(SUM(v.transferencia), 0) AS transferencia
             FROM ventas v
             JOIN despachos dp
             ON dp.id = v.despacho_id
             LEFT JOIN deuda d
-            ON d.idVenta = v.id
+            ON d.id_venta = v.id
             LEFT JOIN cobro_deuda cd
-            ON cd.idDeuda = d.idDeuda
-            AND cd.idChofer = ?
+            ON cd.id_deuda = d.id
+            AND cd.id_chofer = ?
             WHERE dp.chofer_id = ?
             AND dp.estado = 'pendiente';
         `;
-        const result = await this.dataSource.query(sql, [  choferId,  choferId, ]);
+        const result = await this.dataSource.query(sql, [  choferId, choferId,  choferId, ]);
         return result[0];
+    } 
+
+    async obtenerListaVentasPorChoferHoy(choferId: number) {
+        const sql = `
+            select
+			c.nombre,
+			v.efectivo,
+			v.transferencia,
+            v.fecha
+            FROM ventas v
+            JOIN despachos dp  ON dp.id = v.despacho_id
+            join clientes c on v.cliente_id = c.id
+            WHERE dp.chofer_id = ?
+            AND dp.estado = 'pendiente'
+            and (v.efectivo + v.transferencia) > 0
+        `;
+        const result = await this.dataSource.query(sql, [  choferId, ]);
+        return result;
+    } 
+
+
+    async obtenerListaCobrosPorChoferHoy(choferId: number) {
+        const sql = `
+             select c.nombre, cd.valor_cobrado, cd.fecha_cobro from  cobro_deuda cd
+				inner join deuda d on cd.id_deuda = d.id 
+				inner join ventas v on v.id= d.id_venta 
+				inner join clientes c on v.cliente_id =c.id
+				 where cd.fecha_cobro >= CURDATE()
+				   AND cd.fecha_cobro < CURDATE() + INTERVAL 1 DAY          
+				   AND cd.id_chofer = ?   
+        `;
+        const result = await this.dataSource.query(sql, [  choferId ]);
+        return result;
+    } 
+
+
+    async obtenerListaVentasCreditoPorChoferHoy(choferId: number) {
+        const sql = `
+            select
+			c.nombre,
+			d.saldo_pendiente ,
+            d.fecha_creacion fecha
+            FROM ventas v
+            JOIN despachos dp  ON dp.id = v.despacho_id
+            join clientes c on v.cliente_id = c.id
+            join deuda d on d.id_venta = v.id 
+            WHERE dp.chofer_id = ?
+            AND dp.estado = 'pendiente'
+            and d.estado ='PENDIENTE' or d.estado ='PARCIAL'
+        `;
+        const result = await this.dataSource.query(sql, [  choferId ]);
+        return result;
     } 
 
     async obtenerCuentasPorCobrarChofer(choferId: number) {
         const sql = `
             SELECT
-            COALESCE(SUM(d.saldoPendiente), 0) AS cuentas_por_cobrar
+            COALESCE(SUM(d.saldo_pendiente), 0) AS cuentas_por_cobrar
             FROM deuda d
             INNER JOIN ventas v
-            ON v.id = d.idVenta
+            ON v.id = d.id_venta
             INNER JOIN despachos dp
             ON dp.id = v.despacho_id
             WHERE dp.chofer_id = ?
-            AND d.saldoPendiente > 0;
+            AND d.saldo_pendiente > 0;
         `;
 
         const result = await this.dataSource.query(sql, [choferId]);

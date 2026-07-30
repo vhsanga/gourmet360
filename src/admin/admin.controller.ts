@@ -92,6 +92,31 @@ export class AdminController {
     });
   }
 
+  @Get('ventas-chofer-hoy/:choferId')
+  async obtenerListaVentasPorChoferHoy(@Param('choferId') choferId: number) {
+    const ventasHoy = await this.camionesService.obtenerListaVentasPorChoferHoy(choferId);
+    return CustomUtils.responseApi('Resumen de despachos por chofer', 
+      ventasHoy,
+    );
+  }
+
+  @Get('ventas-chofer-credito-hoy/:choferId')
+  async obtenerListaVentasCreditoPorChoferHoy(@Param('choferId') choferId: number) {
+    const ventasHoy = await this.camionesService.obtenerListaVentasCreditoPorChoferHoy(choferId);
+    return CustomUtils.responseApi('Resumen de despachos por chofer', 
+      ventasHoy,
+    );
+  }
+
+  @Get('cobros-chofer-hoy/:choferId')
+  async obtenerListaCobrosPorChoferHoy(@Param('choferId') choferId: number) {
+    const ventasHoy = await this.camionesService.obtenerListaCobrosPorChoferHoy(choferId);
+    return CustomUtils.responseApi('Resumen de despachos por chofer', 
+      ventasHoy,
+    );
+  }
+
+
   @Post('set-despacho-entregado/:choferId')
   async setDespachoEntregado(@Param('choferId') choferId: number) {
     await this.camionesService.setDepachoEntregadoPorChofer(choferId);
@@ -152,8 +177,8 @@ export class AdminController {
   }
 
   @Post('pagar-venta-credito')
-  async pagarVentaCredito(@Body('ventaId')  ventaId: number, @Body('monto') monto: number, @Body('choferId') choferId: number, @Body('tipoPago') tipoPago: string) {
-    const pago = await this.ventasService.pagarVentaCredito(ventaId, monto, choferId, tipoPago);
+  async pagarVentaCredito(@Body('ventaId')  ventaId: number, @Body('monto') monto: number, @Body('choferId') choferId: number, @Body('metodoPago') metodoPago: string) {
+    const pago = await this.ventasService.pagarVentaCredito(ventaId, monto, choferId, metodoPago);
     return pago;
   }
 
