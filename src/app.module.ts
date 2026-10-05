@@ -32,6 +32,7 @@ import { CobroDeuda } from './entities/entities/CobroDeuda';
     TypeOrmModule.forRoot({
       type: 'mysql',
       timezone: '-05:00',
+      dateStrings: true,
       host: '127.0.0.1',
       port: 3306,
       username: 'remoto',
