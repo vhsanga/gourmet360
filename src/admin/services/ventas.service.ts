@@ -279,6 +279,7 @@ export class VentasService {
       const sql = `
         SELECT
             v.id AS id_venta,
+            v.total AS valor_venta,
             DATE_FORMAT(v.fecha, '%Y-%m-%d') AS dia,
             CASE
                 WHEN d.id IS NULL
