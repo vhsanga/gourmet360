@@ -193,7 +193,7 @@ export class VentasService {
     const condicionChofer = rol != 'admin' ? ' and cc.id_chofer = ? ' : '';
 
     const sql = `
-      select c.id, c.nombre, c.direccion, 
+      select c.id, c.nombre, c.direccion, c.contacto, 
         (select COALESCE(sum(total),0) from ventas v where v.cliente_id=c.id AND v.fecha >= ?  AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)) total_ventas,
         (select COALESCE(sum(pagado),0) from ventas v where v.cliente_id=c.id AND v.fecha >= ?  AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)) total_pagado,
         (select COALESCE(sum(efectivo),0) from ventas v where v.cliente_id=c.id AND v.fecha >= ?  AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)) total_efectivo,
