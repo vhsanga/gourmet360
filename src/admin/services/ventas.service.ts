@@ -193,77 +193,30 @@ export class VentasService {
     const condicionChofer = rol != 'admin' ? ' and cc.id_chofer = ? ' : '';
 
     const sql = `
-      SELECT
-          c.id,
-          c.nombre,
-          c.contacto,
-          c.direccion,
-          c.telefono,
-          c.especial,
-
-          (
-              SELECT COALESCE(
-                  SUM(
-                      CASE
-                          WHEN d.id IS NULL
-                          THEN v.total
-                          ELSE d.pago_inicial
-                      END
-                  ),0)
-              FROM ventas v
-              LEFT JOIN deuda d
-                  ON d.id_venta = v.id
-              WHERE v.cliente_id = c.id
-                AND v.fecha >= ?
-                AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
-          ) AS venta_contado_hoy,
-
-          (
-            SELECT COALESCE(SUM(d.saldo_pendiente), 0)
-            FROM deuda d
-              INNER JOIN ventas v
-                  ON v.id = d.id_venta
-              WHERE v.cliente_id = c.id
-                AND d.saldo_pendiente > 0
-          ) AS deuda_acumulada,
-
-          (
-              SELECT COALESCE(SUM(dev.cantidad),0)
-              FROM devoluciones dev
-              WHERE dev.cliente_id = c.id
-                AND dev.created_at >= ?
-                AND dev.created_at < DATE_ADD(?, INTERVAL 1 DAY)
-          ) AS devolucion_hoy,
-
-          (
-              SELECT v.id
-              FROM ventas v
-              WHERE v.cliente_id = c.id
-                AND v.fecha >= ?
-                AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)
-              LIMIT 1
-          ) AS id_venta
-
-      FROM clientes c
-      INNER JOIN clientes_chofer cc
-          ON c.id = cc.id_cliente
-
-      WHERE c.activo = 1
+      select c.id, c.nombre, c.direccion, 
+        (select COALESCE(sum(total),0) from ventas v where v.cliente_id=c.id AND v.fecha >= ?  AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)) total_ventas,
+        (select COALESCE(sum(pagado),0) from ventas v where v.cliente_id=c.id AND v.fecha >= ?  AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)) total_pagado,
+        (select COALESCE(sum(efectivo),0) from ventas v where v.cliente_id=c.id AND v.fecha >= ?  AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)) total_efectivo,
+        (select COALESCE(sum(transferencia),0) from ventas v where v.cliente_id=c.id AND v.fecha >= ?  AND v.fecha < DATE_ADD(?, INTERVAL 1 DAY)) total_transferencia,
+        (select COALESCE(sum(d.saldo_pendiente),0) from deuda d  where d.id_cliente = c.id) deuda_total,
+        u.nombre repartidor
+        from clientes c
+        inner join clientes_chofer cc on cc.id_cliente =c.id
+        inner join usuarios u  on cc.id_chofer  = u.id
+        where c.activo =1 
+        and  cc.id_chofer = ?
         ${condicionChofer}
 
       ORDER BY c.created_at DESC;
     `;
 
     const params: any[] = [
-      // venta_contado_hoy
       fechaParam,
       fechaParam,
-
-      // devolucion_hoy
       fechaParam,
       fechaParam,
-
-      // id_venta
+      fechaParam,
+      fechaParam,
       fechaParam,
       fechaParam,
 
