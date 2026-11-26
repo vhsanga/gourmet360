@@ -203,11 +203,9 @@ export class VentasService {
         from clientes c
         inner join clientes_chofer cc on cc.id_cliente =c.id
         inner join usuarios u  on cc.id_chofer  = u.id
-        where c.activo =1 
-        and  cc.id_chofer = ?
+        where c.activo =1
         ${condicionChofer}
-
-      ORDER BY c.created_at DESC;
+        ORDER BY c.created_at DESC;
     `;
 
     const params: any[] = [
