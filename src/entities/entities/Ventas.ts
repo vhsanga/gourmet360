@@ -41,8 +41,8 @@ export class Ventas {
   })
   fechaPago?: Date | null;
 
-  @Column("bigint", { name: "cobro_chofer_id" })
-  cobroChoferId?: number;
+  @Column("bigint", { name: "cobro_chofer_id", nullable: true })
+  cobroChoferId?: number | null;
 
   @Column("decimal", { name: "total", precision: 10, scale: 2 })
   total?: number;

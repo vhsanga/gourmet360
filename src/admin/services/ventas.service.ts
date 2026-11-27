@@ -75,6 +75,7 @@ export class VentasService {
         detalleVenta.productoId = item.idProducto;
         detalleVenta.cantidad = item.cantidad;
         detalleVenta.precioUnitario = item.precioUnitario;
+        detalleVenta.subtotal = Number(item.cantidad) * Number(item.precioUnitario);
         detalleVenta.createdBy = idChofer;
 
         await queryRunner.manager.save(VentaDetalles, detalleVenta);
