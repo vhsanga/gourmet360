@@ -410,6 +410,7 @@ export class VentasService {
         deuda.valorCobrado = (aCentavos(deuda.valorCobrado) + aplicar) / 100;
         deuda.saldoPendiente = (saldo - aplicar) / 100;
         deuda.fechaUltimoCobro = ahora;
+        deuda.updatedBy = choferId; // chofer que realizó el cobro (puede ser distinto al de la venta)
         deuda.estado = deuda.saldoPendiente <= 0 ? 'PAGADA' : 'PARCIAL';
         await queryRunner.manager.save(Deuda, deuda);
 

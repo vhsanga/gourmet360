@@ -119,12 +119,12 @@ export class CamionService {
     async obtenerResumenVentasPorChoferHoy(choferId: number) {
         const sql = `
             SELECT
-            COALESCE(SUM(d.saldo_pendiente), 0) AS ventas_credito,
+            COALESCE(SUM(d.valor_total - d.pago_inicial), 0) AS ventas_credito,
             COALESCE(SUM(v.efectivo + v.transferencia), 0) AS ventas_contado,
-             (select cd.valor_cobrado from  cobro_deuda cd
-				 where cd.fecha_cobro >= CURDATE()
-				   AND cd.fecha_cobro < CURDATE() + INTERVAL 1 DAY          
-				   AND cd.id_chofer = ?) AS cobrado,
+            (select COALESCE(SUM(cd.valor_cobrado), 0) from cobro_deuda cd
+                where cd.fecha_cobro >= CURDATE()
+                  AND cd.fecha_cobro < CURDATE() + INTERVAL 1 DAY
+                  AND cd.id_chofer = ?) AS cobrado,
             COALESCE(SUM(v.efectivo), 0) AS efectivo,
             COALESCE(SUM(v.transferencia), 0) AS transferencia
             FROM ventas v
@@ -132,13 +132,10 @@ export class CamionService {
             ON dp.id = v.despacho_id
             LEFT JOIN deuda d
             ON d.id_venta = v.id
-            LEFT JOIN cobro_deuda cd
-            ON cd.id_deuda = d.id
-            AND cd.id_chofer = ?
             WHERE dp.chofer_id = ?
             AND dp.estado = 'pendiente';
         `;
-        const result = await this.dataSource.query(sql, [  choferId, choferId,  choferId, ]);
+        const result = await this.dataSource.query(sql, [choferId, choferId]);
         return result[0];
     } 
 
@@ -163,13 +160,15 @@ export class CamionService {
 
     async obtenerListaCobrosPorChoferHoy(choferId: number) {
         const sql = `
-             select c.nombre, cd.valor_cobrado, cd.fecha_cobro from  cobro_deuda cd
-				inner join deuda d on cd.id_deuda = d.id 
-				inner join ventas v on v.id= d.id_venta 
-				inner join clientes c on v.cliente_id =c.id
-				 where cd.fecha_cobro >= CURDATE()
-				   AND cd.fecha_cobro < CURDATE() + INTERVAL 1 DAY          
-				   AND cd.id_chofer = ?   
+            select c.nombre, SUM(cd.valor_cobrado) valor_cobrado, MAX(cd.fecha_cobro) fecha_cobro
+            from cobro_deuda cd
+            inner join deuda d on cd.id_deuda = d.id
+            inner join clientes c on d.id_cliente = c.id
+            where cd.fecha_cobro >= CURDATE()
+              AND cd.fecha_cobro < CURDATE() + INTERVAL 1 DAY
+              AND cd.id_chofer = ?
+            GROUP BY c.id, c.nombre
+            ORDER BY MAX(cd.fecha_cobro) DESC
         `;
         const result = await this.dataSource.query(sql, [  choferId ]);
         return result;
