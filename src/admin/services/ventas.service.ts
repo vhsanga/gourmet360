@@ -347,56 +347,89 @@ export class VentasService {
         throw new NotFoundException('Venta no encontrada');
       }
 
-      const deuda = await queryRunner.manager.findOne(Deuda, {
-        where: { ventaId: ventaId },
-      });
-
-      if (!deuda) {
-        throw new NotFoundException('La venta no tiene una deuda registrada.');
-      }
-
-      if (deuda.estado === 'PAGADA') {
-        throw new BadRequestException('La deuda ya fue cancelada.');
-      }
-
-      if (monto <= 0) {
+      if (!monto || monto <= 0) {
         throw new BadRequestException('El monto debe ser mayor a cero.');
       }
 
-      if (monto > Number(deuda.saldoPendiente)) {
+      // Todas las deudas abiertas del cliente, de la más antigua a la más reciente.
+      // Se bloquean las filas para evitar pagos concurrentes sobre las mismas deudas.
+      const deudas = await queryRunner.manager.find(Deuda, {
+        where: [
+          { clienteId: venta.clienteId, estado: 'PENDIENTE' },
+          { clienteId: venta.clienteId, estado: 'PARCIAL' },
+        ],
+        order: { fechaCreacion: 'ASC', id: 'ASC' },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (deudas.length === 0) {
+        throw new NotFoundException('El cliente no tiene deudas pendientes.');
+      }
+
+      // Se trabaja en centavos para evitar errores de redondeo con decimales
+      const aCentavos = (n?: number | string | null) =>
+        Math.round(Number(n ?? 0) * 100);
+      const totalPendiente = deudas.reduce(
+        (acc, d) => acc + aCentavos(d.saldoPendiente),
+        0,
+      );
+      let restante = aCentavos(monto);
+
+      if (restante > totalPendiente) {
         throw new BadRequestException(
-          `El monto supera el saldo pendiente (${deuda.saldoPendiente}).`,
+          `El monto supera la deuda total del cliente (${(totalPendiente / 100).toFixed(2)}).`,
         );
       }
 
-      // Registrar el cobro
-      const cobro = new CobroDeuda();
-      cobro.idDeuda = deuda.id;
-      cobro.valorCobrado = monto;
-      cobro.idChofer = choferId;
-      cobro.tipoPago = tipoPago; // o recibirlo como parámetro
-      cobro.fechaCobro = new Date();
-      await queryRunner.manager.save(CobroDeuda, cobro);
+      const ahora = new Date();
+      const detalle: {
+        deudaId: number;
+        ventaId: number;
+        montoAplicado: number;
+        saldoPendiente: number;
+        estado: string;
+      }[] = [];
 
-      // Actualizar deuda
-      deuda.valorCobrado = Number(deuda.valorCobrado) + Number(monto);
-      deuda.saldoPendiente = Number(deuda.valorTotal) - Number(deuda.valorCobrado);
-      deuda.fechaUltimoCobro = new Date();
-      deuda.estado = deuda.saldoPendiente <= 0? 'PAGADA' : 'PARCIAL';
-      await queryRunner.manager.save(Deuda, deuda);
+      for (const deuda of deudas) {
+        if (restante <= 0) break;
+
+        const saldo = aCentavos(deuda.saldoPendiente);
+        const aplicar = Math.min(restante, saldo);
+        restante -= aplicar;
+
+        // Registrar el cobro contra esta deuda
+        const cobro = new CobroDeuda();
+        cobro.idDeuda = deuda.id!;
+        cobro.valorCobrado = aplicar / 100;
+        cobro.idChofer = choferId;
+        cobro.tipoPago = tipoPago;
+        cobro.fechaCobro = ahora;
+        await queryRunner.manager.save(CobroDeuda, cobro);
+
+        // Actualizar la deuda
+        deuda.valorCobrado = (aCentavos(deuda.valorCobrado) + aplicar) / 100;
+        deuda.saldoPendiente = (saldo - aplicar) / 100;
+        deuda.fechaUltimoCobro = ahora;
+        deuda.estado = deuda.saldoPendiente <= 0 ? 'PAGADA' : 'PARCIAL';
+        await queryRunner.manager.save(Deuda, deuda);
+
+        detalle.push({
+          deudaId: deuda.id!,
+          ventaId: deuda.ventaId!,
+          montoAplicado: aplicar / 100,
+          saldoPendiente: deuda.saldoPendiente,
+          estado: deuda.estado,
+        });
+      }
 
       await queryRunner.commitTransaction();
 
-      return CustomUtils.responseApi(
-        'Pago registrado con éxito',
-        {
-          ventaId: venta.id,
-          deudaId: deuda.id,
-          montoPagado: monto,
-          saldoPendiente: deuda.saldoPendiente,
-          estado: deuda.estado,
-        },
-      );
+      return CustomUtils.responseApi('Pago registrado con éxito', {
+        clienteId: venta.clienteId,
+        montoPagado: Number(monto),
+        deudaRestante: (totalPendiente - aCentavos(monto)) / 100,
+        deudasAfectadas: detalle,
+      });
 
     } catch (error) {
       await queryRunner.rollbackTransaction();
