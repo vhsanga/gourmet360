@@ -179,16 +179,18 @@ export class CamionService {
     async obtenerListaVentasCreditoPorChoferHoy(choferId: number) {
         const sql = `
             select
-			c.nombre,
-			d.saldo_pendiente ,
-            d.fecha_creacion fecha
+                c.id,
+                c.nombre,
+                SUM(d.saldo_pendiente) saldo_pendiente,
+                MAX(d.fecha_creacion) fecha
             FROM ventas v
             JOIN despachos dp  ON dp.id = v.despacho_id
             join clientes c on v.cliente_id = c.id
-            join deuda d on d.id_venta = v.id 
+            join deuda d on d.id_venta = v.id
             WHERE dp.chofer_id = ?
             AND dp.estado = 'pendiente'
-            and d.estado ='PENDIENTE' or d.estado ='PARCIAL'
+            AND d.estado IN ('PENDIENTE', 'PARCIAL')
+            GROUP BY c.id, c.nombre
         `;
         const result = await this.dataSource.query(sql, [  choferId ]);
         return result;
